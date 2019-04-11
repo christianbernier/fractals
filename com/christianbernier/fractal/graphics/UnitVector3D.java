@@ -1,18 +1,18 @@
 package com.christianbernier.fractal.graphics;
 
-public class ConstrainedVector3D extends Vector3D {
-	public ConstrainedVector3D() {
-		super(0, 0, 1);
+public class UnitVector3D extends Vector3D {
+	public UnitVector3D() {
+		super(0, 0, 1); //DONT CHANGE THESE COORDS
 	}
 	
-	public ConstrainedVector3D(double x, double y, double z) {
+	public UnitVector3D(double x, double y, double z) {
 		super(x, y, z);
-		constrain();
+		normalizeSelf();
 	}
 	
-	public ConstrainedVector3D(Vector3D v) { //copy constructor, takes vector or constrained vector
+	public UnitVector3D(Vector3D v) { //copy constructor, takes vector or normalizeSelfed vector
 		super(v.x, v.y, v.x);
-		constrain();
+		normalizeSelf();
 	}
 	
 	@Override
@@ -23,19 +23,19 @@ public class ConstrainedVector3D extends Vector3D {
 	@Override
 	public void setX(double v) {
 		x = v;
-		constrain();
+		normalizeSelf();
 	}
 
 	@Override
 	public void setY(double v) {
 		y = v;
-		constrain();
+		normalizeSelf();
 	}
 
 	@Override
 	public void setZ(double v) {
 		z = v;
-		constrain();
+		normalizeSelf();
 	}
 	
 	@Override
@@ -53,12 +53,7 @@ public class ConstrainedVector3D extends Vector3D {
 		x += v.x;
 		y += v.y;
 		z += v.z;
-		constrain();
-	}
-
-	@Override
-	public Vector3D add(Vector3D v) {
-		return new Vector3D(x+v.x, y+v.y, z+v.z).getUnit();
+		normalizeSelf();
 	}
 
 	@Override
@@ -66,11 +61,14 @@ public class ConstrainedVector3D extends Vector3D {
 		x -= v.x;
 		y -= v.y;
 		z -= v.z;
-		constrain();
+		normalizeSelf();
 	}
 	
 	@Override
-	public Vector3D subtract(Vector3D v) {
-		return new Vector3D(x-v.x, y-v.y, z-v.z).getUnit();
+	public void crossSelf(Vector3D v) {
+		x = y*v.z-z*v.y;
+		y = z*v.x-x*v.z;
+		z = x*v.y-y*v.x;
+		normalizeSelf();
 	}
 }

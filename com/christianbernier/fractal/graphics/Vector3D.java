@@ -42,13 +42,6 @@ public class Vector3D{
 		return Math.sqrt(x*x+y*y+z*z);
 	}
 	
-	public Vector3D getUnit() { //Returns a new vector, use constrain() to make this vector a unit vector
-		if(getMagnitude() == 0) {
-			return new Vector3D(); //tentative
-		}
-		return scale(1/getMagnitude());
-	}
-	
 	public void setX(double v) {
 		x = v;
 	}
@@ -61,11 +54,18 @@ public class Vector3D{
 		z = v;
 	}
 	
-	public void constrain() { //make this vector a unit vector
+	public void normalizeSelf() { //make this vector a unit vector
 		if(getMagnitude() == 0) {
 			return;
 		}
 		scaleSelf(1/getMagnitude());
+	}
+	
+	public Vector3D normalize() { //Returns a new vector, use normalizeSelf() to make this vector a unit vector
+		if(getMagnitude() == 0) {
+			return new Vector3D(); //tentative
+		}
+		return scale(1/getMagnitude());
 	}
 	
 	public void scaleSelf(double s) {
@@ -78,10 +78,6 @@ public class Vector3D{
 		return new Vector3D(x*s, y*s, z*s);
 	}
 	
-	public static Vector3D scale(Vector3D v, double s) {
-		return new Vector3D(v).scale(s);
-	}
-	
 	public void negateSelf() {
 		x = -x;
 		y = -y;
@@ -90,10 +86,6 @@ public class Vector3D{
 	
 	public Vector3D negate() {
 		return new Vector3D(-x, -y, -z);
-	}
-	
-	public static Vector3D negate(Vector3D v) {
-		return new Vector3D(v).negate();
 	}
 	
 	public void addSelf(Vector3D v) {
@@ -106,10 +98,6 @@ public class Vector3D{
 		return new Vector3D(x+v.x, y+v.y, z+v.z);
 	}
 	
-	public static Vector3D add(Vector3D v1, Vector3D v2) {
-		return new Vector3D(v1).add(v2);
-	}
-	
 	public void subtractSelf(Vector3D v) {
 		x -= v.x;
 		y -= v.y;
@@ -120,7 +108,21 @@ public class Vector3D{
 		return new Vector3D(x-v.x, y-v.y, z-v.z);
 	}
 	
-	public static Vector3D subtract(Vector3D v1, Vector3D v2) {
-		return new Vector3D(v1).subtract(v2);
+	public void crossSelf(Vector3D v) {
+		x = y*v.z-z*v.y;
+		y = z*v.x-x*v.z;
+		z = x*v.y-y*v.x;
+	}
+	
+	public Vector3D cross(Vector3D v) {
+		return new Vector3D(y*v.z-z*v.y, z*v.x-x*v.z, x*v.y-y*v.x);
+	}
+	
+	public double dot(Vector3D v) {
+		return x*v.x+y*v.y+z*v.z;
+	}
+	
+	public boolean equals(Vector3D v) {
+		return x==v.x&&y==v.y&&z==v.z;
 	}
 }
