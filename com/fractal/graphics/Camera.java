@@ -1,5 +1,8 @@
 package com.fractal.graphics;
 
+import com.fractal.compute.Vector3D;
+import com.fractal.compute.UnitVector3D;
+
 public class Camera {
 	Vector3D position;
 	UnitVector3D direction;
