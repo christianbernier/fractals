@@ -1,19 +1,18 @@
 package com.fractal.compute;
 
-import org.lwjgl.opencl.Util;
-import org.lwjgl.opencl.CLMem;
-import org.lwjgl.opencl.CLCommandQueue;
-import org.lwjgl.BufferUtils;
-import org.lwjgl.PointerBuffer;
-import org.lwjgl.opencl.CLProgram;
-import org.lwjgl.opencl.CLKernel;
-import java.nio.FloatBuffer;
-import java.util.List;
-import org.lwjgl.opencl.CL;
-import org.lwjgl.opencl.CLContext;
-import org.lwjgl.opencl.CLDevice;
-import org.lwjgl.opencl.CLPlatform;
-import static org.lwjgl.opencl.CL10.*;
+import org.lwjgl.*;
+import org.lwjgl.opencl.*;
+import org.lwjgl.system.*;
+
+import java.nio.*;
+import java.util.concurrent.*;
+
+import static org.lwjgl.opencl.CL11.*;
+import static com.fractal.compute.InfoUtil.*;
+import static org.lwjgl.opencl.KHRICD.*;
+import static org.lwjgl.system.MemoryStack.*;
+import static org.lwjgl.system.MemoryUtil.*;
+import static org.lwjgl.system.Pointer.*;
 
 public class ComputeHandler {
 
