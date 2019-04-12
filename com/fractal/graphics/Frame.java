@@ -28,7 +28,7 @@ public class Frame {
 	public void fillRandom() {
 		for(double[][] r : pixels) {
 			for(double[] c : r) {
-				for(double v : c) {
+				for(@SuppressWarnings("unused") double v : c) {
 					v = Math.random();
 				}
 			}
