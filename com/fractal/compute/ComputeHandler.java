@@ -15,5 +15,5 @@ import static org.lwjgl.system.MemoryUtil.*;
 import static org.lwjgl.system.Pointer.*;
 
 public class ComputeHandler {
-
+	
 }
