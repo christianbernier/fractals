@@ -1,9 +1,12 @@
 package com.fractal.graphics;
 
+import java.nio.*;
+
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
+import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFWCursorPosCallback;
 import org.lwjgl.glfw.GLFWKeyCallback;
 import org.lwjgl.glfw.GLFWVidMode;
@@ -20,12 +23,20 @@ public class GUIWindow{
 	public static int height = 600;
 	
 	private static final GLFWKeyCallback keyCallback = new KeyboardInput();
-	private static final GLFWCursorPosCallback cursorCallback = new MouseInput(width, height);
+	private static final GLFWCursorPosCallback cursorCallback = new MouseInput();
+	private DoubleBuffer mouseBufferX = BufferUtils.createDoubleBuffer(1);
+	private DoubleBuffer mouseBufferY = BufferUtils.createDoubleBuffer(1);
+	private double mouseX, mouseY;
+	
+	private Camera camera = new Camera();
 	
 	PixelObject pixels;
 	
 	public void init() {
 		running = true;
+		
+		mouseX = 0;
+		mouseY = 0;
 		
 		if(!glfwInit()) {
 			System.err.println("GLFW Initialization Failed");
@@ -87,7 +98,7 @@ public class GUIWindow{
 		glfwSwapBuffers(window);
 	}
 	
-	public void update() {
+	public void handleKeyboard() {
 		glfwPollEvents();
 		if(KeyboardInput.isKeyDown(GLFW_KEY_Q)) {
 			System.out.println("Roll Camera CCW");
@@ -108,10 +119,19 @@ public class GUIWindow{
 		}
 	}
 	
+	public void handleMouse() {
+		glfwGetCursorPos(window, mouseBufferX, mouseBufferY);
+		camera.updateDirection(mouseBufferX.get(0)  - mouseX, mouseBufferY.get(0) - mouseY);
+		mouseX = mouseBufferX.get(0);
+		mouseY = mouseBufferY.get(0);
+		System.out.println(camera);
+	}
+	
 	public void run() {
 		init();
 		while(running) {
-			update();
+			handleKeyboard();
+			handleMouse();
 			render();
 			
 			if(glfwWindowShouldClose(window)) {

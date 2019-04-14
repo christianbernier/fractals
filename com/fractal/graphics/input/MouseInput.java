@@ -4,18 +4,24 @@ import org.lwjgl.glfw.GLFWCursorPosCallback;
 
 public class MouseInput extends GLFWCursorPosCallback{
 
-	int w, h;
+	double prevx, prevy;
+	double x, y;
 	
-	public MouseInput(int w, int h) {
-		this.w = w;
-		this.h = h;
+	
+	public MouseInput() {
+		prevx = 0;
+		prevy = 0;
 	}
 	
 	@Override
 	public void invoke(long window, double xpos, double ypos) {
-		double x = xpos - (w / 2);
-		double y = ypos - (h / 2);
-		System.out.println("Mouse [x: " + x + " y: " + y + "]");
+		x = xpos - prevx;
+		y = ypos - prevy;
+		prevx = xpos;
+		prevy = ypos;
+		xpos = x;
+		ypos = y;
+		//System.out.println("Mouse [x: " + x + " y: " + y + "]");
 	}
 
 }

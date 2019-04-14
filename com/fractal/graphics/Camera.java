@@ -55,7 +55,11 @@ public class Camera {
 	}
 	
 	public String toString() {
-		return "Camera - Position: [" + position + "], Direction: [" + direction + "]";
+		return "Camera - Position: [" + position + "], Direction: [" + direction + "], Angle: [" + angle + "]";
+	}
+	
+	public void updateDirection(double x, double y) {
+		direction.rotateSelf(x, y, 0);
 	}
 	
 	/* [Q][W][E]          	    [Roll CCW / increment angle]    [Forward / increment relative Z]       [Roll CW / decrement angle]

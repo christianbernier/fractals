@@ -118,11 +118,34 @@ public class Vector3D{
 		return new Vector3D(y*v.z-z*v.y, z*v.x-x*v.z, x*v.y-y*v.x);
 	}
 	
+	public void rotateSelf(double yaw, double pitch, double roll) { //ANGLES IN RADIANS
+		if(yaw != 0) {
+			x = x * Math.cos(yaw) - y * Math.sin(yaw);
+			y = x * Math.sin(yaw) + x * Math.cos(yaw);
+		}
+		
+		if(pitch != 0) {
+			x = x * Math.cos(pitch) + z * Math.sin(pitch);
+			z = -x * Math.sin(pitch) + z * Math.cos(pitch);
+		}
+		
+		if(roll != 0) {
+			y = y * Math.cos(roll) - z * Math.sin(roll);
+			z = y * Math.sin(roll) + z * Math.cos(roll);
+		}
+	}
+	
+	public Vector3D rotate(Vector3D v, double yaw, double pitch, double roll) {
+		Vector3D temp = new Vector3D(v);
+		temp.rotateSelf(yaw, pitch, roll);
+		return temp;
+	}
+	
 	public double dot(Vector3D v) {
-		return x*v.x+y*v.y+z*v.z;
+		return x * v.x + y * v.y + z * v.z;
 	}
 	
 	public boolean equals(Vector3D v) {
-		return x==v.x&&y==v.y&&z==v.z;
+		return x == v.x && y == v.y && z == v.z;
 	}
 }
