@@ -66,11 +66,11 @@ public class UnitVector3D extends Vector3D {
 		normalizeSelf();
 	}
 	
-	@Override
+	/*@Override
 	public void crossSelf(Vector3D v) {
 		x = y*v.z-z*v.y;
 		y = z*v.x-x*v.z;
 		z = x*v.y-y*v.x;
 		normalizeSelf();
-	}
+	}*/
 }

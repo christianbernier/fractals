@@ -61,11 +61,11 @@ public class Vector3D{
 		scaleSelf(1/getMagnitude());
 	}
 	
-	public Vector3D normalize() { //Returns a new vector, use normalizeSelf() to make this vector a unit vector
+	public UnitVector3D normalize() { //Returns a new vector, use normalizeSelf() to make this vector a unit vector
 		if(getMagnitude() == 0) {
-			return new Vector3D(); //tentative
+			return new UnitVector3D(); //tentative
 		}
-		return scale(1/getMagnitude());
+		return new UnitVector3D(scale(1/getMagnitude()));
 	}
 	
 	public void scaleSelf(double s) {
@@ -108,16 +108,6 @@ public class Vector3D{
 		return new Vector3D(x-v.x, y-v.y, z-v.z);
 	}
 	
-	public void crossSelf(Vector3D v) {
-		x = y*v.z-z*v.y;
-		y = z*v.x-x*v.z;
-		z = x*v.y-y*v.x;
-	}
-	
-	public Vector3D cross(Vector3D v) {
-		return new Vector3D(y*v.z-z*v.y, z*v.x-x*v.z, x*v.y-y*v.x);
-	}
-	
 	public void rotateSelf(double yaw, double pitch, double roll) { //ANGLES IN RADIANS
 		double tempx = x, tempy = y, tempz = z;
 		if(yaw != 0) {
@@ -142,6 +132,20 @@ public class Vector3D{
 		Vector3D temp = new Vector3D(v);
 		temp.rotateSelf(yaw, pitch, roll);
 		return temp;
+	}
+	
+	/*public void crossSelf(Vector3D v) {
+		x = y*v.z-z*v.y;
+		y = z*v.x-x*v.z;
+		z = x*v.y-y*v.x;
+	}*/
+	
+	public Vector3D cross(Vector3D v) {
+		return new Vector3D(y*v.z-z*v.y, z*v.x-x*v.z, x*v.y-y*v.x);
+	}
+	
+	public Vector3D project(Vector3D v) { //projects this onto v
+		return v.scale(dot(v)/(v.getMagnitude()*v.getMagnitude()));
 	}
 	
 	public double dot(Vector3D v) {

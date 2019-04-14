@@ -21,12 +21,14 @@ public class GUIWindow{
 	public long window;
 	public static int width = 800;
 	public static int height = 600;
-	private static final double MOUSESENSITIVITY = 100;
+	private static final double MOUSECOEFFICIENT = 100;
+	private static final double KEYBOARDCOEFFICIENT = 2;
 	
 	private static final GLFWKeyCallback keyCallback = new KeyboardInput();
 	private static final GLFWCursorPosCallback cursorCallback = new MouseInput(width, height);
 	private DoubleBuffer mouseBufferX = BufferUtils.createDoubleBuffer(1);
 	private DoubleBuffer mouseBufferY = BufferUtils.createDoubleBuffer(1);
+	private DoubleBuffer guiAxesCoords = BufferUtils.createDoubleBuffer(6);
 	
 	private Camera camera = new Camera();
 	
@@ -95,42 +97,63 @@ public class GUIWindow{
 		glfwSwapBuffers(window);
 	}
 	
-	public void handleKeyboard() {
+	public void handleKeyboard(double timeDelta) {
 		glfwPollEvents();
 		if(KeyboardInput.isKeyDown(GLFW_KEY_Q)) {
 			System.out.println("Roll Camera CCW");
 		} else if(KeyboardInput.isKeyDown(GLFW_KEY_E)) {
 			System.out.println("Roll Camera CW");
 		} else if(KeyboardInput.isKeyDown(GLFW_KEY_W)) {
-			System.out.println("Move Camera Forward");
+			//System.out.println("Move Camera Forward");
+			camera.moveRelativeZ(KEYBOARDCOEFFICIENT * timeDelta);
 		} else if(KeyboardInput.isKeyDown(GLFW_KEY_S)) {
-			System.out.println("Move Camera Backwards");
+			//System.out.println("Move Camera Backwards");
+			camera.moveRelativeZ(-KEYBOARDCOEFFICIENT * timeDelta);
 		} else if(KeyboardInput.isKeyDown(GLFW_KEY_A)) {
-			System.out.println("Strafe Camera Left");
+			//System.out.println("Strafe Camera Left");
+			camera.moveRelativeX(-KEYBOARDCOEFFICIENT * timeDelta);
 		} else if(KeyboardInput.isKeyDown(GLFW_KEY_D)) {
-			System.out.println("Strafe Camera Right");
+			//System.out.println("Strafe Camera Right");
+			camera.moveRelativeX(KEYBOARDCOEFFICIENT * timeDelta);
 		} else if(KeyboardInput.isKeyDown(GLFW_KEY_LEFT_SHIFT)) {
-			System.out.println("Move Camera Down");
+			//System.out.println("Move Camera Down");
+			camera.moveRelativeY(-KEYBOARDCOEFFICIENT * timeDelta);
 		} else if(KeyboardInput.isKeyDown(GLFW_KEY_SPACE)) {
-			System.out.println("Move Camera Up");
-		}
+			//System.out.println("Move Camera Up");
+			camera.moveRelativeY(KEYBOARDCOEFFICIENT * timeDelta);
+		} else if (KeyboardInput.isKeyDown(GLFW_KEY_ESCAPE))
+            glfwSetWindowShouldClose(window, true);
 	}
 	
-	public void handleMouse() {
+	public void handleMouse(double timeDelta) {
 		glfwGetCursorPos(window, mouseBufferX, mouseBufferY);
-		camera.updateDirection(mouseBufferX.get(0), mouseBufferY.get(0), MOUSESENSITIVITY);
+		camera.updateDirection(mouseBufferX.get(0), mouseBufferY.get(0), MOUSECOEFFICIENT * timeDelta);
 		System.out.println(camera);
 	}
 	
 	public void run() {
 		init();
+		double previousTime = glfwGetTime();
+		double timeDelta = 0;
+		
 		while(running) {
-			handleKeyboard();
-			handleMouse();
+			handleKeyboard(timeDelta);
+			handleMouse(timeDelta);
 			render();
+			
+			timeDelta = glfwGetTime() - previousTime;
+			previousTime = glfwGetTime();
 			
 			if(glfwWindowShouldClose(window)) {
 				running = false;
+			}
+			
+			if(timeDelta < 16.66) { //60 FPS CAP
+				try {
+					Thread.sleep((long)(16.66-timeDelta));
+				} catch (InterruptedException e) {
+					//lol
+				}
 			}
 		}
 	}
