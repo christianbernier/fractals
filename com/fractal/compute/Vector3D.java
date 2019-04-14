@@ -119,19 +119,22 @@ public class Vector3D{
 	}
 	
 	public void rotateSelf(double yaw, double pitch, double roll) { //ANGLES IN RADIANS
+		double tempx = x, tempy = y, tempz = z;
 		if(yaw != 0) {
-			x = x * Math.cos(yaw) - y * Math.sin(yaw);
-			y = x * Math.sin(yaw) + x * Math.cos(yaw);
+			x = tempx * Math.cos(yaw) - tempy * Math.sin(yaw);
+			y = tempx * Math.sin(yaw) + tempx * Math.cos(yaw);
+			tempx = x; tempy = y; tempz = z;
 		}
 		
 		if(pitch != 0) {
-			x = x * Math.cos(pitch) + z * Math.sin(pitch);
-			z = -x * Math.sin(pitch) + z * Math.cos(pitch);
+			x = tempx * Math.cos(pitch) + tempz * Math.sin(pitch);
+			z = -tempx * Math.sin(pitch) + tempz * Math.cos(pitch);
+			tempx = x; tempy = y; tempz = z;
 		}
 		
 		if(roll != 0) {
-			y = y * Math.cos(roll) - z * Math.sin(roll);
-			z = y * Math.sin(roll) + z * Math.cos(roll);
+			y = tempy * Math.cos(roll) - tempz * Math.sin(roll);
+			z = tempy * Math.sin(roll) + tempz * Math.cos(roll);
 		}
 	}
 	

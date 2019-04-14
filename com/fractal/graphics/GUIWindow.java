@@ -21,12 +21,12 @@ public class GUIWindow{
 	public long window;
 	public static int width = 800;
 	public static int height = 600;
+	private static final double MOUSESENSITIVITY = 100;
 	
 	private static final GLFWKeyCallback keyCallback = new KeyboardInput();
-	private static final GLFWCursorPosCallback cursorCallback = new MouseInput();
+	private static final GLFWCursorPosCallback cursorCallback = new MouseInput(width, height);
 	private DoubleBuffer mouseBufferX = BufferUtils.createDoubleBuffer(1);
 	private DoubleBuffer mouseBufferY = BufferUtils.createDoubleBuffer(1);
-	private double mouseX, mouseY;
 	
 	private Camera camera = new Camera();
 	
@@ -34,9 +34,6 @@ public class GUIWindow{
 	
 	public void init() {
 		running = true;
-		
-		mouseX = 0;
-		mouseY = 0;
 		
 		if(!glfwInit()) {
 			System.err.println("GLFW Initialization Failed");
@@ -121,9 +118,7 @@ public class GUIWindow{
 	
 	public void handleMouse() {
 		glfwGetCursorPos(window, mouseBufferX, mouseBufferY);
-		camera.updateDirection(mouseBufferX.get(0)  - mouseX, mouseBufferY.get(0) - mouseY);
-		mouseX = mouseBufferX.get(0);
-		mouseY = mouseBufferY.get(0);
+		camera.updateDirection(mouseBufferX.get(0), mouseBufferY.get(0), MOUSESENSITIVITY);
 		System.out.println(camera);
 	}
 	

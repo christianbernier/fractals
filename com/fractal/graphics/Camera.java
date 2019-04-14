@@ -58,8 +58,10 @@ public class Camera {
 		return "Camera - Position: [" + position + "], Direction: [" + direction + "], Angle: [" + angle + "]";
 	}
 	
-	public void updateDirection(double x, double y) {
-		direction.rotateSelf(x, y, 0);
+	public void updateDirection(double mouseX, double mouseY, double sensitivity) {
+		UnitVector3D temp = new UnitVector3D();
+		temp.rotateSelf(mouseX / sensitivity, mouseY / sensitivity, 0);
+		direction = temp;
 	}
 	
 	/* [Q][W][E]          	    [Roll CCW / increment angle]    [Forward / increment relative Z]       [Roll CW / decrement angle]

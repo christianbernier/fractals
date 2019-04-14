@@ -1,8 +1,10 @@
 package com.fractal.compute;
 
 public class UnitVector3D extends Vector3D {
+	
 	public UnitVector3D() {
-		super(0, 0, 1); //DONT CHANGE THESE COORDS
+		super(1, 1, 1); //DONT CHANGE THESE COORDS
+		normalizeSelf();
 	}
 	
 	public UnitVector3D(double x, double y, double z) {
