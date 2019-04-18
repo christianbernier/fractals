@@ -2,7 +2,7 @@
  * Copyright LWJGL. All rights reserved.
  * License terms: https://www.lwjgl.org/license
  */
-package com.fractal.compute;
+package com.fractal.compute.utils;
 
 import org.lwjgl.*;
 import org.lwjgl.system.*;

@@ -6,61 +6,58 @@ import java.nio.*;
 
 import org.lwjgl.BufferUtils;
 
-import static org.lwjgl.system.MemoryUtil.*;
-
 public class Camera {
 	Vector3D position;
-	UnitVector3D direction;
-	UnitVector3D angle;
+	double yaw;
+	double pitch;
+	UnitVector3D relativeZaxis; //Where the camera is pointing
 	UnitVector3D relativeXaxis;
 	UnitVector3D relativeYaxis;
 	
 	public Camera() {
 		position = new Vector3D();
-		direction =  new UnitVector3D();
-		angle = new UnitVector3D();
-		calculateRelativeX();
-		calculateRelativeY();
+		setAngle(0, 0);
 	}
 	
 	public Camera(Vector3D v) {
 		position = new Vector3D(v);
-		direction =  new UnitVector3D();
-		angle = new UnitVector3D();
-		calculateRelativeX();
-		calculateRelativeY();
+		setAngle(0, 0);
 	}
 	
-	public Camera(Vector3D p, Vector3D d) {
-		position = new Vector3D(p);
-		direction =  (UnitVector3D)(new Vector3D(d));
-		angle = new UnitVector3D();
-		calculateRelativeX();
-		calculateRelativeY();
+	public Camera(Vector3D v, double p, double y) {
+		position = new Vector3D(v);
+		setAngle(p, y);
+	}
+	
+	public Camera(double p, double y) {
+		position = new Vector3D();
+		setAngle(p, y);
 	}
 	
 	public void setLocation(Vector3D v) {
 		position = new Vector3D(v);
 	}
 	
-	public void setDirection(Vector3D v) {
-		direction =  (UnitVector3D)(new Vector3D(v));
+	public void setAngle(double p, double y) {
+		pitch = p;
+		yaw = y;
+		constructRelativeAxes();
 	}
-	
-	/*public void setAngle(double a) {
-		angle = new UnitVector3D(); //MULTIPLY BY TRANSFORMATION MATRIX TO ROTATE AROUND DIRECTION
-	}*/								//NOT FINISHED
 	
 	public Vector3D getLocation() {
 		return new Vector3D(position);
 	}
 	
 	public UnitVector3D getDirection() {
-		return new UnitVector3D(direction);
+		return new UnitVector3D(relativeZaxis);
 	}
 	
-	public UnitVector3D getAngleVector() {
-		return new UnitVector3D(angle);
+	public double getPitch() {
+		return pitch;
+	}
+	
+	public double getYaw() {
+		return yaw;
 	}
 	
 	public UnitVector3D getRelativeX() {
@@ -71,20 +68,8 @@ public class Camera {
 		return new UnitVector3D(relativeYaxis);
 	}
 	
-	public double getAngle() {
-		return angle.dot(new UnitVector3D())/(angle.getMagnitude()*(new UnitVector3D()).getMagnitude());
-	}
-	
 	public String toString() {
-		return "Camera - Position: [" + position + "], Direction: [" + direction + "], Angle: [" + angle + "]";
-	}
-	
-	public void updateDirection(double mouseX, double mouseY, double sensitivity) {
-		UnitVector3D temp = new UnitVector3D();
-		temp.rotateSelf(mouseX / sensitivity, mouseY / sensitivity, 0);
-		direction = temp;
-		calculateRelativeX();
-		calculateRelativeY();
+		return "Camera - Position: [" + position + "], Pitch: " + pitch + ", Yaw: " + yaw;
 	}
 	
 	/* [Q][W][E]          	    [Roll CCW / increment angle]    [Forward / increment relative Z]       [Roll CW / decrement angle]
@@ -101,28 +86,14 @@ public class Camera {
 	 *		Camera --->		O------X+	
 	 */
 	
-	public void calculateRelativeX() {
-		if(direction.equals(new UnitVector3D())) {
-			relativeXaxis = new UnitVector3D(-1, 0, 0);
-		} else if(direction.equals(new UnitVector3D(0, 0, -1))) {
-			relativeXaxis = new UnitVector3D(1, 0, 0);
-		} else {
-			relativeXaxis = (UnitVector3D)(angle.cross(direction).normalize());
-		}
-	}
-	
-	public void calculateRelativeY() {
-		if(direction.equals(new UnitVector3D())) {
-			relativeYaxis = new UnitVector3D(0, -1, 0);
-		} else if(direction.equals(new UnitVector3D(0, 0, -1))) {
-			relativeYaxis = new UnitVector3D(0, 1, 0);
-		} else {
-			relativeYaxis = (UnitVector3D)(angle.cross(direction).cross(direction).normalize());
-		}
+	public void constructRelativeAxes() { 
+		relativeZaxis = new UnitVector3D(pitch, yaw);
+		relativeYaxis = relativeZaxis.rotate(0, Math.PI / 2, 0);
+		relativeXaxis = relativeZaxis.rotate(-Math.PI / 2, 0, 0);
 	}
 	
 	public void moveRelativeZ(double m) { //move along direction vector
-		position.addSelf(direction.scale(m));
+		position.addSelf(relativeZaxis.scale(m));
 	}
 	
 	public void moveRelativeY(double m) {

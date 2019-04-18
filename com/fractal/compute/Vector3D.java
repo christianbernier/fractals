@@ -58,7 +58,7 @@ public class Vector3D{
 		if(getMagnitude() == 0) {
 			return;
 		}
-		scaleSelf(1/getMagnitude());
+		scaleSelf(1.0/getMagnitude());
 	}
 	
 	public UnitVector3D normalize() { //Returns a new vector, use normalizeSelf() to make this vector a unit vector
@@ -112,7 +112,7 @@ public class Vector3D{
 		double tempx = x, tempy = y, tempz = z;
 		if(yaw != 0) {
 			x = tempx * Math.cos(yaw) - tempy * Math.sin(yaw);
-			y = tempx * Math.sin(yaw) + tempx * Math.cos(yaw);
+			y = tempx * Math.sin(yaw) + tempy * Math.cos(yaw);
 			tempx = x; tempy = y; tempz = z;
 		}
 		
@@ -128,8 +128,8 @@ public class Vector3D{
 		}
 	}
 	
-	public Vector3D rotate(Vector3D v, double yaw, double pitch, double roll) {
-		Vector3D temp = new Vector3D(v);
+	public Vector3D rotate(double yaw, double pitch, double roll) {
+		Vector3D temp = new Vector3D(this);
 		temp.rotateSelf(yaw, pitch, roll);
 		return temp;
 	}
