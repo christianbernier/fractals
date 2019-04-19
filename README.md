@@ -16,5 +16,5 @@ A project for AP CS, where we render 3D fractals using distance estimators and r
   <li>Mouse and Keyboard input complete</li>
   <li>Basic kernel written to render a sphere using raymarching (still has bugs)</li>
   <li>Compute and GUI handlers consolidated into one file</li>
-  <li>Full kernel integration: frames are now rendered using openCL, displayed properly, and input is translated into position/direction changes in the camera class, which is then sent back to the kernel for the next frame</li>
+  <li>Full kernel integration: frames are now rendered using openCL and displayed properly, and input is translated into position/direction changes in the camera class, which is then sent back to the kernel for the next frame</li>
 </ul>
