@@ -8,10 +8,12 @@
     #endif
     #define varfloat double
     #define varfloat3 double3
+	#define varfloat2 double2
     #define _255 255.0
 #else
     #define varfloat float
     #define varfloat3 float3
+	#define varfloat2 float2
     #define _255 255.0f
 #endif
 
@@ -22,11 +24,17 @@ varfloat DE_Sphere(varfloat3 vec, varfloat3 center, varfloat radius) {
 	return distance(vec, center) - radius;
 }
 
+varfloat DE_Torus(varfloat3 vec, varfloat3 center, varfloat2 t) {
+	varfloat3 p = vec - center;
+	return length((varfloat2)(length(p.xz)-t.x, p.y)) - t.y;
+}
+
 varfloat DE(varfloat3 vec) {
 	varfloat dist;
     
-    dist = DE_Sphere(vec, (varfloat3)(0, 0, 0), 1);
-    //dist = min(dist, DE_Sphere(vec, (varfloat3){0, 0, 4}, 1));
+    //dist = DE_Sphere(vec, (varfloat3)(0, 0, 0), 1);
+    dist = DE_Torus(vec, (varfloat3)(0, 0, 0), (varfloat2)(0.20, 0.05));
+	//dist = min(dist, DE_Sphere(vec, (varfloat3){0, 0, 4}, 1));
     //dist = min(dist, DE_Sphere(vec, (varfloat3){0, 4, 0}, 1));
     //dist = min(dist, DE_Sphere(vec, (varfloat3){4, 0, 0}, 1));
     //dist = min(dist, DE_Sphere(vec, (varfloat3){4, 4, 0}, 1));
@@ -62,9 +70,9 @@ kernel void mandelbrot(const int width,
     unsigned int iy = get_global_id(1);
     
 	varfloat y = yaw - fov/2.0 + fov*ix/width;
-	//varfloat f = fov * height / width;
-	//varfloat p = pitch - f/2.0 + f*iy/height;
-	varfloat p = pitch - fov/2.0 + fov*iy/height;
+	varfloat f = (fov * height) / width;
+	varfloat p = pitch - f/2.0 + f*iy/height;
+	//varfloat p = pitch - fov/2.0 + fov*iy/height;
 	
     varfloat3 position = {px, py, pz};
     
@@ -77,20 +85,20 @@ kernel void mandelbrot(const int width,
 	//HAS TO BE INTRINSIC ROTATION: PITCH THEN YAW CURRENTLY YAW THEN PITCH
     
     int iterations = 0;
-    varfloat currentDist = 0;
+    varfloat currentDist = 1;
     
-    while(iterations < maxiterations) { // && currentDist > collidethresh
+    while(iterations < maxiterations && currentDist > collidethresh) { // 
     	currentDist = DE(position);
 		position += direction*currentDist;
     	iterations++;
     }
 	
-	/*if(iterations >= maxiterations) {
+	if(iterations >= maxiterations) {
 		write_imageui(output, (int2)(ix, iy), (uint4)128);
 	} else {
 		varfloat color = _255*(maxiterations-iterations)/maxiterations;
 		write_imageui(output, (int2)(ix, iy), (uint4)(color, 0, 0, 255));
-	}*/
+	}
 	
-	write_imageui(output, (int2)(ix, iy), (uint4)((currentDist*10), 0, 0, 255));
+	//write_imageui(output, (int2)(ix, iy), (uint4)((_255*(maxiterations-iterations))/maxiterations, 0, 0, 255));
 }

@@ -39,8 +39,8 @@ public class Camera {
 	}
 	
 	public void setAngle(double p, double y) {
-		pitch = p;
-		yaw = y;
+		pitch = (p < 0 ? p%(Math.PI*2)+2*Math.PI : p%(Math.PI*2));
+		yaw = (y < 0 ? y%(Math.PI*2)+2*Math.PI : y%(Math.PI*2));
 		constructRelativeAxes();
 	}
 	
@@ -69,7 +69,7 @@ public class Camera {
 	}
 	
 	public String toString() {
-		return "Camera - Position: [" + position + "], Pitch: " + pitch + ", Yaw: " + yaw;
+		return "Camera - Position: [" + position + "], Pitch (DEG): " + pitch*180.0/Math.PI + ", Yaw (DEG): " + yaw*180.0/Math.PI;
 	}
 	
 	/* [Q][W][E]          	    [Roll CCW / increment angle]    [Forward / increment relative Z]       [Roll CW / decrement angle]
@@ -88,7 +88,7 @@ public class Camera {
 	
 	public void constructRelativeAxes() { 
 		relativeZaxis = new UnitVector3D(pitch, yaw);
-		relativeYaxis = relativeZaxis.rotate(0, Math.PI / 2, 0);
+		relativeYaxis = new UnitVector3D(0, 0, 1); //NO LONGER ORTHOGONAL
 		relativeXaxis = relativeZaxis.rotate(-Math.PI / 2, 0, 0);
 	}
 	
@@ -107,7 +107,7 @@ public class Camera {
 	public void guiAxes(DoubleBuffer coords) {
 		coords = BufferUtils.createDoubleBuffer(6);
 		coords.put((new UnitVector3D(1, 0, 0)).dot(relativeXaxis));
-		coords.put((new UnitVector3D(1, 0, 0)).dot(relativeYaxis));
+		coords.put((new UnitVector3D(1, 0, 0)).dot(relativeYaxis)); //RELATIVE Y AXIS IS NO LONGER ORTHOGONAL
 		coords.put((new UnitVector3D(0, 1, 0)).dot(relativeXaxis));
 		coords.put((new UnitVector3D(0, 1, 0)).dot(relativeYaxis));
 		coords.put((new UnitVector3D(0, 0, 1)).dot(relativeXaxis));
