@@ -44,7 +44,7 @@ varfloat DE(varfloat3 vec) {
     //dist = min(dist, DE_Sphere(vec, (varfloat3){4, 4, 0}, 1));
     //dist = min(dist, DE_Sphere(vec, (varfloat3){4, 0, 4}, 1));
     //dist = min(dist, DE_Sphere(vec, (varfloat3){0, 4, 4}, 1));
-    //dist = min(dist, DE_Sphere(vec, (varfloat3){4, 4, 4}, 1));
+    dist = min(dist, DE_Sphere(vec, (varfloat3){4, 4, 4}, 1));
     
     return dist;
 }

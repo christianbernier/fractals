@@ -103,8 +103,8 @@ public final class RunFractal {
     private static boolean rebuild;
 	public static boolean running = false;
 	public static GLFWWindow window;
-	public static int width = 512;
-	public static int height = 512;
+	public static int width = 612;
+	public static int height = 612;
 	public static double fov = Math.PI/3;
 	private static final double MOUSECOEFFICIENT = 10;
 	private static final double KEYBOARDCOEFFICIENT = 0.1;
@@ -257,8 +257,6 @@ public final class RunFractal {
         if (!glCaps.OpenGL30) {
             throw new RuntimeException("OpenGL 3.0 is required to run this demo.");
         }
-
-        //debugProc = debugGL ? GLUtil.setupDebugMessageCallback() : null;
 
         glfwSwapInterval(0);
 
@@ -442,34 +440,35 @@ public final class RunFractal {
 
 	public static void handleInput(double timeDelta) {
 		glfwPollEvents();
+		double m = 0.1; //KEYBOARDCOEFFICIENT * timeDelta
 		if(KeyboardInput.isKeyDown(GLFW_KEY_Q)) {
 			System.out.println("Roll Camera CCW");
 		} else if(KeyboardInput.isKeyDown(GLFW_KEY_E)) {
 			System.out.println("Roll Camera CW");
 		} else if(KeyboardInput.isKeyDown(GLFW_KEY_W)) {
 			//System.out.println("Move Camera Forward");
-			camera.moveRelativeZ(KEYBOARDCOEFFICIENT * timeDelta);
+			camera.moveRelativeZ(m); 
 		} else if(KeyboardInput.isKeyDown(GLFW_KEY_S)) {
 			//System.out.println("Move Camera Backwards");
-			camera.moveRelativeZ(-KEYBOARDCOEFFICIENT * timeDelta);
+			camera.moveRelativeZ(-m);
 		} else if(KeyboardInput.isKeyDown(GLFW_KEY_A)) {
 			//System.out.println("Strafe Camera Left");
-			camera.moveRelativeX(-KEYBOARDCOEFFICIENT * timeDelta);
+			camera.moveRelativeX(-m);
 		} else if(KeyboardInput.isKeyDown(GLFW_KEY_D)) {
 			//System.out.println("Strafe Camera Right");
-			camera.moveRelativeX(KEYBOARDCOEFFICIENT * timeDelta);
+			camera.moveRelativeX(m);
 		} else if(KeyboardInput.isKeyDown(GLFW_KEY_LEFT_SHIFT)) {
 			//System.out.println("Move Camera Down");
-			camera.moveRelativeY(-KEYBOARDCOEFFICIENT * timeDelta);
+			camera.moveRelativeY(-m);
 		} else if(KeyboardInput.isKeyDown(GLFW_KEY_SPACE)) {
 			//System.out.println("Move Camera Up");
-			camera.moveRelativeY(KEYBOARDCOEFFICIENT * timeDelta);
+			camera.moveRelativeY(m);
 		} else if (KeyboardInput.isKeyDown(GLFW_KEY_ESCAPE)) {
             glfwSetWindowShouldClose(window.handle, true);
 		}
 		
-		width = SizeInput.width;
-		height = SizeInput.height;
+		//width = SizeInput.width;
+		//height = SizeInput.height;
 		
 		camera.setAngle(-MouseInput.y/(MOUSECOEFFICIENT * timeDelta), MouseInput.x/(MOUSECOEFFICIENT * timeDelta));
 		//System.out.println(camera + " Time: " + timeDelta + " Width: " + width + " Height: " + height + " X: " + MouseInput.x + " Y: " + MouseInput.y);
@@ -486,6 +485,8 @@ public final class RunFractal {
 			handleInput(timeDelta);
 			//render_Graphics();
 			render_Compute();
+			
+			glfwSwapBuffers(window.handle);
 			
 			if(glfwWindowShouldClose(window.handle)) {
 				running = false;
@@ -622,17 +623,13 @@ public final class RunFractal {
             e.printStackTrace();
             glfwSetWindowShouldClose(window.handle, true);
         }
-    	
-    	glfwSwapBuffers(window.handle);
     }
 
     public static void render_Graphics() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glClearColor(1.0f, 0.0f, 1.0f, 0f);
 		
-		pixels.draw();
-		
-		glfwSwapBuffers(window.handle);
+		//pixels.draw();
 	}
     
     private interface CLReleaseFunction {
