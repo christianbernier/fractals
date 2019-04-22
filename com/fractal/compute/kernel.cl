@@ -20,6 +20,10 @@
 //DISTANCE ESTIMATORS https://iquilezles.org/www/articles/distfunctions/distfunctions.htm
 //OPENCL SPECIFICATION https://www.khronos.org/registry/OpenCL/specs/opencl-2.1.pdf
 
+varfloat DE_Sphere(varfloat3 vec, varfloat3 center, varfloat radius);
+varfloat DE_Torus(varfloat3 vec, varfloat3 center, varfloat2 t);
+varfloat DE(varfloat3 vec);
+
 varfloat DE_Sphere(varfloat3 vec, varfloat3 center, varfloat radius) { 
 	return distance(vec, center) - radius;
 }
@@ -57,12 +61,6 @@ kernel void mandelbrot(const int width,
 					   const varfloat collidethresh, 
 					   const int maxiterations,*/) {
 					   
-	//const varfloat fov = 3.14159/3;
-	//const varfloat px = -10; 
-	//const varfloat py = 0;
-	//const varfloat pz = 0;
-	//const varfloat pitch = 0;
-	//const varfloat yaw = 0;
 	const varfloat collidethresh = 0.1;
 	const int maxiterations = 200;
 	
@@ -78,11 +76,11 @@ kernel void mandelbrot(const int width,
     
 	varfloat3 direction = {cos(y)*cos(p), -sin(y), -cos(y)*sin(p)};
 	
-	/*	(1, 0, 0)
-	 *	(cos(yaw), -sin(yaw), 0)
-	 *  (cos(yaw)cos(pitch), -sin(yaw), -cos(yaw)sin(pitch))
+	/*	(1, 0, 0) Start
+	 *	(cos(yaw), -sin(yaw), 0) Yaw
+	 *  (cos(yaw)cos(pitch), -sin(yaw), -cos(yaw)sin(pitch)) Pitch
 	 */
-	//HAS TO BE INTRINSIC ROTATION: PITCH THEN YAW CURRENTLY YAW THEN PITCH
+	//INTRINSIC ROTATION: PITCH THEN YAW CURRENTLY YAW THEN PITCH
     
     int iterations = 0;
     varfloat currentDist = 1;
