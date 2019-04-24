@@ -31,6 +31,7 @@ import com.fractal.graphics.input.*;
 import com.fractal.graphics.fractalEngine.PixelObject;
 import static com.fractal.compute.utils.IOUtil.*;
 import static com.fractal.compute.utils.InfoUtil.*;
+import com.fractal.compute.*;
 
 import com.fractal.graphics.Camera;
 
@@ -106,7 +107,7 @@ public final class RunFractal {
 	public static int width = 612;
 	public static int height = 612;
 	public static double fov = Math.PI/3;
-	private static final double MOUSECOEFFICIENT = 10;
+	private static final double MOUSECOEFFICIENT = 200;
 	private static final double KEYBOARDCOEFFICIENT = 0.1;
 	
 	private static final GLFWKeyCallback keyCallback = new KeyboardInput();
@@ -385,14 +386,14 @@ public final class RunFractal {
             glShaderSource(fsh,
                 "#version 150\n" +
                 "\n" +
-                "uniform isampler2D mandelbrot;\n" +
+                "uniform isampler2D raymarch;\n" +
                 "\n" +
                 "in vec2 texCoord;\n" +
                 "\n" +
                 "out vec4 fragColor;\n" +
                 "\n" +
                 "void main(void) {\n" +
-                "\tfragColor = texture(mandelbrot, texCoord) / 255.0;\n" +
+                "\tfragColor = texture(raymarch, texCoord) / 255.0;\n" +
                 "}");
             glCompileShader(fsh);
             log = glGetShaderInfoLog(fsh, glGetShaderi(fsh, GL_INFO_LOG_LENGTH));
@@ -423,7 +424,7 @@ public final class RunFractal {
 
             glUseProgram(glProgram);
 
-            glUniform1i(glGetUniformLocation(glProgram, "mandelbrot"), 0);
+            glUniform1i(glGetUniformLocation(glProgram, "raymarch"), 0);
         } catch (Exception e) {
             // TODO: cleanup
             throw new RuntimeException(e);
@@ -470,8 +471,10 @@ public final class RunFractal {
 		//width = SizeInput.width;
 		//height = SizeInput.height;
 		
-		camera.setAngle(-MouseInput.y/(MOUSECOEFFICIENT * timeDelta), MouseInput.x/(MOUSECOEFFICIENT * timeDelta));
+		camera.setAngle(-MouseInput.y/MOUSECOEFFICIENT, MouseInput.x/MOUSECOEFFICIENT);
 		//System.out.println(camera + " Time: " + timeDelta + " Width: " + width + " Height: " + height + " X: " + MouseInput.x + " Y: " + MouseInput.y);
+		System.out.println("X" + camera.getLocation().getX() + " Y" + camera.getLocation().getY() + " Z" + camera.getLocation().getX() + " P" + camera.getPitch() + " Y" + camera.getYaw() + " " + camera.getRelativeY());
+		//System.out.println(new UnitVector3D(0,0));
 	}
 	
 	public static void main(String[] args) {
@@ -806,7 +809,7 @@ public final class RunFractal {
         rebuild = false;
 
         // init kernel with constants
-        clKernel = clCreateKernel(clProgram, "mandelbrot", errcode_ret);
+        clKernel = clCreateKernel(clProgram, "raymarch", errcode_ret);
         checkCLError(errcode_ret);
     }
 

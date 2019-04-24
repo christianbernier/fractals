@@ -39,17 +39,15 @@ public class Camera {
 	}
 	
 	public void setAngle(double p, double y) {
-		pitch = (p < 0 ? p%(Math.PI*2)+2*Math.PI : p%(Math.PI*2));
-		yaw = (y < 0 ? y%(Math.PI*2)+2*Math.PI : y%(Math.PI*2));
+		pitch = p;
+		yaw = y;
+		//pitch = (p < 0 ? p%(Math.PI*2)+2*Math.PI : p%(Math.PI*2));
+		//yaw = (y < 0 ? y%(Math.PI*2)+2*Math.PI : y%(Math.PI*2));
 		constructRelativeAxes();
 	}
 	
 	public Vector3D getLocation() {
 		return new Vector3D(position);
-	}
-	
-	public UnitVector3D getDirection() {
-		return new UnitVector3D(relativeZaxis);
 	}
 	
 	public double getPitch() {
@@ -58,6 +56,10 @@ public class Camera {
 	
 	public double getYaw() {
 		return yaw;
+	}
+	
+	public UnitVector3D getRelativeZ() {
+		return new UnitVector3D(relativeZaxis);
 	}
 	
 	public UnitVector3D getRelativeX() {
@@ -86,10 +88,10 @@ public class Camera {
 	 *		Camera --->		O------X+	
 	 */
 	
-	public void constructRelativeAxes() { 
+	public void constructRelativeAxes() {
 		relativeZaxis = new UnitVector3D(pitch, yaw);
-		relativeYaxis = new UnitVector3D(0, 0, 1); //NO LONGER ORTHOGONAL
-		relativeXaxis = relativeZaxis.rotate(-Math.PI / 2, 0, 0);
+		relativeYaxis = new UnitVector3D(pitch + Math.PI / 2, yaw);
+		relativeXaxis = new UnitVector3D(0, yaw + Math.PI / 2);
 	}
 	
 	public void moveRelativeZ(double m) { //move along direction vector
@@ -105,9 +107,10 @@ public class Camera {
 	}
 	
 	public void guiAxes(DoubleBuffer coords) {
+		//UnitVector3D orthogonalYaxis = new UnitVector3D(pitch + Math.PI / 2, yaw);
 		coords = BufferUtils.createDoubleBuffer(6);
 		coords.put((new UnitVector3D(1, 0, 0)).dot(relativeXaxis));
-		coords.put((new UnitVector3D(1, 0, 0)).dot(relativeYaxis)); //RELATIVE Y AXIS IS NO LONGER ORTHOGONAL
+		coords.put((new UnitVector3D(1, 0, 0)).dot(relativeYaxis));
 		coords.put((new UnitVector3D(0, 1, 0)).dot(relativeXaxis));
 		coords.put((new UnitVector3D(0, 1, 0)).dot(relativeYaxis));
 		coords.put((new UnitVector3D(0, 0, 1)).dot(relativeXaxis));

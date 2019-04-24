@@ -18,7 +18,7 @@ public class Vector3D{
 	public Vector3D(Vector3D v) { //copy constructor
 		x = v.x;
 		y = v.y;
-		x = v.z;
+		z = v.z;
 	}
 	
 	@Override

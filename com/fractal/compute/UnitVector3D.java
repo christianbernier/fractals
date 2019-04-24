@@ -12,11 +12,12 @@ public class UnitVector3D extends Vector3D {
 	}
 	
 	public UnitVector3D(double pitch, double yaw) { //Construct using Euler angles
-		super(Math.cos(yaw) * Math.cos(pitch), -Math.sin(yaw), -Math.cos(yaw)*Math.sin(pitch));
+		super(Math.cos(yaw) * Math.cos(pitch), -Math.sin(yaw), -Math.cos(yaw) * Math.sin(pitch));
+		//System.out.println(Math.cos(yaw) * Math.cos(pitch) + " " + -Math.sin(yaw) + " " + -Math.cos(yaw) * Math.sin(pitch));
 	}
 	
 	public UnitVector3D(Vector3D v) { //copy constructor, takes vector or unit vector
-		super(v.x, v.y, v.x);
+		super(v.x, v.y, v.z);
 		normalizeSelf();
 	}
 	

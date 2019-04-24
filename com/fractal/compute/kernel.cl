@@ -49,7 +49,7 @@ varfloat DE(varfloat3 vec) {
     return dist;
 }
 
-kernel void mandelbrot(const int width, 
+kernel void raymarch(const int width, 
 					   const int height,
 					   __write_only image2d_t output,
 					   const varfloat fov, 
@@ -87,7 +87,7 @@ kernel void mandelbrot(const int width,
     
     while(iterations < maxiterations && currentDist > collidethresh) { // 
     	currentDist = DE(position);
-		position += direction*currentDist;
+		position += direction * currentDist;
     	iterations++;
     }
 	
