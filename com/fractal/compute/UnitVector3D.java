@@ -23,7 +23,7 @@ public class UnitVector3D extends Vector3D {
 	
 	@Override
 	public String toString() {
-		return "UNIT VECTOR x: " + x + " y: " + y + " z: " + z;
+		return String.format("UNIT VECTOR x: %3.3f y: %3.3f z: %3.3f", x, y, z);
 	}
 	
 	@Override

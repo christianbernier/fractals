@@ -21,7 +21,7 @@ import static org.lwjgl.opencl.CL10GL.*;
 import static org.lwjgl.opencl.KHRGLSharing.*;
 import static org.lwjgl.opengl.ARBCLEvent.*;
 import static org.lwjgl.opengl.CGL.*;
-import static org.lwjgl.opengl.GL30C.*;
+import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.opengl.WGL.*;
 import static org.lwjgl.opencl.KHRICD.*;
 import static org.lwjgl.system.MemoryStack.*;
@@ -486,8 +486,8 @@ public final class RunFractal {
 		
 		while(running) {
 			handleInput(timeDelta);
-			//render_Graphics();
 			render_Compute();
+			render_Graphics();
 			
 			glfwSwapBuffers(window.handle);
 			
@@ -629,10 +629,12 @@ public final class RunFractal {
     }
 
     public static void render_Graphics() {
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glClearColor(1.0f, 0.0f, 1.0f, 0f);
-		
-		//pixels.draw();
+		glClear(GL_COLOR_BUFFER_BIT); // | GL_DEPTH_BUFFER_BIT
+		glClearColor(1f, 0f, 1f, 1f);
+		/*glBegin(GL_LINES);
+			glVertex2f(0f,  0f);
+			glVertex2f(1f, 1f);
+		glEnd();*/
 	}
     
     private interface CLReleaseFunction {
