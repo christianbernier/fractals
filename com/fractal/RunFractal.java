@@ -436,13 +436,18 @@ public final class RunFractal {
 			//System.out.println("Move Camera Up");
 			camera.moveRelativeY(m);
 		} else if (KeyboardInput.isKeyDown(GLFW_KEY_ESCAPE)) {
-            glfwSetWindowShouldClose(window.handle, true);
+			glfwSetInputMode(window.handle, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		}
+		
+		if(glfwGetMouseButton(window.handle, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+			glfwSetInputMode(window.handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 		}
 		
 		//width = SizeInput.width;
 		//height = SizeInput.height;
-		
-		camera.setAngle(-MouseInput.y/MOUSECOEFFICIENT, MouseInput.x/MOUSECOEFFICIENT);
+		if(glfwGetInputMode(window.handle, GLFW_CURSOR) == GLFW_CURSOR_DISABLED) {
+			camera.setAngle(-MouseInput.y/MOUSECOEFFICIENT, MouseInput.x/MOUSECOEFFICIENT);
+		}
 		//System.out.println(camera + " Time: " + timeDelta + " Width: " + width + " Height: " + height + " X: " + MouseInput.x + " Y: " + MouseInput.y);
 		System.out.println("X" + camera.getLocation().getX() + " Y" + camera.getLocation().getY() + " Z" + camera.getLocation().getX() + " P" + camera.getPitch() + " Y" + camera.getYaw() + " " + camera.getRelativeY());
 		//System.out.println(new UnitVector3D(0,0));
@@ -600,26 +605,42 @@ public final class RunFractal {
     }
 
     public static void render_Graphics() {
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		// The vertices of our Triangle
-		float[] vertices = new float[]
-		{
-		    +0.0f, +0.8f,    // Top coordinate
-		    -0.8f, -0.8f,    // Bottom-left coordinate
-		    +0.8f, -0.8f     // Bottom-right coordinate
-		};
+    	// Generate and bind a Vertex Array
+    	//vao = glGenVertexArrays();
+    	//glBindVertexArray(vao);
 
-		// Create a FloatBuffer of vertices
-		FloatBuffer verticesBuffer = BufferUtils.createFloatBuffer(vertices.length);
-		verticesBuffer.put(vertices).flip();
-		
-		//glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glBufferData(GL_ARRAY_BUFFER, verticesBuffer, GL_STATIC_DRAW);
-		
-		glVertexAttribPointer(1, 2, GL_FLOAT, false, 0, 0);
-		glBindVertexArray(1);
-		
-		//glDrawArrays(GL_TRIANGLES, 0, 3);
+    	// The vertices of our Triangle
+    	float[] vertices = new float[]
+    	{
+    	    +0.0f, +0.8f,    // Top coordinate
+    	    -0.8f, -0.8f,    // Bottom-left coordinate
+    	    +0.8f, -0.8f     // Bottom-right coordinate
+    	};
+
+    	// Create a FloatBuffer of vertices
+    	FloatBuffer verticesBuffer = BufferUtils.createFloatBuffer(vertices.length);
+    	verticesBuffer.put(vertices).flip();
+
+    	// Create a Buffer Object and upload the vertices buffer
+    	//vbo = glGenBuffers();
+    	//glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    	glBufferData(GL_ARRAY_BUFFER, verticesBuffer, GL_STATIC_DRAW);
+
+    	// Point the buffer at location 0, the location we set
+    	// inside the vertex shader. You can use any location
+    	// but the locations should match
+    	glVertexAttribPointer(1, 2, GL_FLOAT, false, 0, 0);
+    	glBindVertexArray(1);
+    	
+    	glBindVertexArray(vao);
+        glEnableVertexAttribArray(1);
+
+        // Draw a triangle of 3 vertices
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+
+        // Disable our location
+        glDisableVertexAttribArray(1);
+        glBindVertexArray(1);
 	}
     
     private interface CLReleaseFunction {
