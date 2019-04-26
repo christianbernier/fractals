@@ -61,8 +61,9 @@ kernel void raymarch(const int width,
 					   const varfloat collidethresh, 
 					   const int maxiterations,*/) {
 					   
-	const varfloat collidethresh = 0.1;
-	const int maxiterations = 200;
+	//These values kinda work
+	const varfloat collidethresh = 0.05;
+	const int maxiterations = 10;
 	
 	unsigned int ix = get_global_id(0);
     unsigned int iy = get_global_id(1);
