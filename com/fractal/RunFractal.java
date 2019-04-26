@@ -8,6 +8,7 @@ import org.lwjgl.system.*;
 
 import java.io.*;
 import java.nio.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -42,6 +43,26 @@ public final class RunFractal {
     static {
         try {
             source = ioResourceToByteBuffer("com/fractal/compute/kernel.cl", 4096);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    private static final ByteBuffer vssource;
+
+    static {
+        try {
+            vssource = ioResourceToByteBuffer("com/fractal/graphics/graphicsEngine/vertexshader.vs", 4096);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    private static final ByteBuffer fssource;
+
+    static {
+        try {
+            fssource = ioResourceToByteBuffer("com/fractal/graphics/graphicsEngine/fragmentshader.fs", 4096);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -218,35 +239,9 @@ public final class RunFractal {
 		GLFWVidMode vidMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 		
 		glfwSetWindowPos(window.handle, 100, 100);
-		
-		glfwMakeContextCurrent(window.handle);		
-		
-		int[] x = new int[] {
-			-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5
-		};
-		
-		int[] y = new int[] {
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-		};
-		
-		float[] r = new float[] {
-			0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1f
-		};
-		
-		float[] g = new float[] {
-			0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1f
-		};
-		
-		float[] b = new float[] {
-			0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1f
-		};
-		
-		
-		
-		pixels = new PixelObject(1, width, height, x, y, r, g, b);
 	}
 	
-	public static void init_Compute() {
+	public static void init_Compute() {		
         IntBuffer size = BufferUtils.createIntBuffer(2);
 
         nglfwGetFramebufferSize(window.handle, memAddress(size), memAddress(size) + 4);
@@ -277,7 +272,7 @@ public final class RunFractal {
                 
                 deviceCaps = CL.createDeviceCapabilities(device, platformCaps);
             }
-
+            
             // Create the context
             PointerBuffer ctxProps = BufferUtils.createPointerBuffer(7);
             switch (Platform.get()) {
@@ -360,22 +355,8 @@ public final class RunFractal {
             }
 
             vsh = glCreateShader(GL_VERTEX_SHADER);
-            glShaderSource(vsh,
-                "#version 150\n" +
-                "\n" +
-                "uniform mat4 projection;\n" +
-                "\n" +
-                "uniform vec2 size;\n" +
-                "\n" +
-                "in vec2 posIN;\n" +
-                "in vec2 texIN;\n" +
-                "\n" +
-                "out vec2 texCoord;\n" +
-                "\n" +
-                "void main(void) {\n" +
-                "\tgl_Position = projection * vec4(posIN * size, 0.0, 1.0);\n" +
-                "\ttexCoord = texIN;\n" +
-                "}");
+            glShaderSource(vsh, StandardCharsets.UTF_8.decode(vssource).toString());
+            
             glCompileShader(vsh);
             String log = glGetShaderInfoLog(vsh, glGetShaderi(vsh, GL_INFO_LOG_LENGTH));
             if (!log.isEmpty()) {
@@ -383,18 +364,8 @@ public final class RunFractal {
             }
 
             fsh = glCreateShader(GL_FRAGMENT_SHADER);
-            glShaderSource(fsh,
-                "#version 150\n" +
-                "\n" +
-                "uniform isampler2D raymarch;\n" +
-                "\n" +
-                "in vec2 texCoord;\n" +
-                "\n" +
-                "out vec4 fragColor;\n" +
-                "\n" +
-                "void main(void) {\n" +
-                "\tfragColor = texture(raymarch, texCoord) / 255.0;\n" +
-                "}");
+            glShaderSource(fsh, StandardCharsets.UTF_8.decode(fssource).toString());
+            
             glCompileShader(fsh);
             log = glGetShaderInfoLog(fsh, glGetShaderi(fsh, GL_INFO_LOG_LENGTH));
             if (!log.isEmpty()) {
@@ -487,7 +458,7 @@ public final class RunFractal {
 		while(running) {
 			handleInput(timeDelta);
 			render_Compute();
-			render_Graphics();
+			//render_Graphics();
 			
 			glfwSwapBuffers(window.handle);
 			
@@ -629,12 +600,26 @@ public final class RunFractal {
     }
 
     public static void render_Graphics() {
-		glClear(GL_COLOR_BUFFER_BIT); // | GL_DEPTH_BUFFER_BIT
-		glClearColor(1f, 0f, 1f, 1f);
-		/*glBegin(GL_LINES);
-			glVertex2f(0f,  0f);
-			glVertex2f(1f, 1f);
-		glEnd();*/
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		// The vertices of our Triangle
+		float[] vertices = new float[]
+		{
+		    +0.0f, +0.8f,    // Top coordinate
+		    -0.8f, -0.8f,    // Bottom-left coordinate
+		    +0.8f, -0.8f     // Bottom-right coordinate
+		};
+
+		// Create a FloatBuffer of vertices
+		FloatBuffer verticesBuffer = BufferUtils.createFloatBuffer(vertices.length);
+		verticesBuffer.put(vertices).flip();
+		
+		//glBindBuffer(GL_ARRAY_BUFFER, vbo);
+		glBufferData(GL_ARRAY_BUFFER, verticesBuffer, GL_STATIC_DRAW);
+		
+		glVertexAttribPointer(1, 2, GL_FLOAT, false, 0, 0);
+		glBindVertexArray(1);
+		
+		//glDrawArrays(GL_TRIANGLES, 0, 3);
 	}
     
     private interface CLReleaseFunction {
