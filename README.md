@@ -23,6 +23,6 @@ A project for AP CS, where we render 3D fractals using distance estimators and r
 <ul>
   <li>Some OpenGL implementation drawing simple 2d shapes, but still has bugs and doesn't work</li>
   <li>The kernel now properly shades the rendered images based on the number of iterations required per pixel. Here is a sample image of a torus and a sphere:</li>
-  ![Torus and Sphere Sample Image](https://raw.githubusercontent.com/christianbernier/fractals/sample.png)
+  ![Torus and Sphere Sample Image](https://raw.githubusercontent.com/christianbernier/fractals/master/sample.png)
   <li>Mouse input issue fixed - the screen no longer shakes incessantly</li>
 </ul>
