@@ -3,7 +3,7 @@ package com.fractal.compute;
 public class UnitVector3D extends Vector3D {
 	
 	public UnitVector3D() {
-		super(1, 0, 0);
+		super(0, 1, 0);
 	}
 	
 	public UnitVector3D(double x, double y, double z) {
@@ -12,8 +12,7 @@ public class UnitVector3D extends Vector3D {
 	}
 	
 	public UnitVector3D(double pitch, double yaw) { //Construct using Euler angles
-		super(Math.cos(yaw) * Math.cos(pitch), -Math.sin(yaw), -Math.cos(yaw) * Math.sin(pitch));
-		//System.out.println(Math.cos(yaw) * Math.cos(pitch) + " " + -Math.sin(yaw) + " " + -Math.cos(yaw) * Math.sin(pitch));
+		super(Math.sin(yaw)*Math.cos(pitch), Math.cos(yaw)*Math.cos(pitch), Math.sin(pitch));
 	}
 	
 	public UnitVector3D(Vector3D v) { //copy constructor, takes vector or unit vector

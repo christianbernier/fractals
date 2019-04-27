@@ -125,8 +125,8 @@ public final class RunFractal {
     private static boolean rebuild;
 	public static boolean running = false;
 	public static GLFWWindow window;
-	public static int width = 612;
-	public static int height = 612;
+	public static int width = 480;
+	public static int height = 360;
 	public static double fov = Math.PI/3;
 	private static final double MOUSECOEFFICIENT = 200;
 	private static final double KEYBOARDCOEFFICIENT = 0.1;
@@ -412,30 +412,38 @@ public final class RunFractal {
 
 	public static void handleInput(double timeDelta) {
 		glfwPollEvents();
-		double m = 0.1; //KEYBOARDCOEFFICIENT * timeDelta
+		double m = 0.02; //KEYBOARDCOEFFICIENT * timeDelta
 		if(KeyboardInput.isKeyDown(GLFW_KEY_Q)) {
 			System.out.println("Roll Camera CCW");
-		} else if(KeyboardInput.isKeyDown(GLFW_KEY_E)) {
+		}
+		if(KeyboardInput.isKeyDown(GLFW_KEY_E)) {
 			System.out.println("Roll Camera CW");
-		} else if(KeyboardInput.isKeyDown(GLFW_KEY_W)) {
+		}
+		if(KeyboardInput.isKeyDown(GLFW_KEY_W)) {
 			//System.out.println("Move Camera Forward");
-			camera.moveRelativeZ(m); 
-		} else if(KeyboardInput.isKeyDown(GLFW_KEY_S)) {
+			camera.moveRelativeY(m); 
+		}
+		if(KeyboardInput.isKeyDown(GLFW_KEY_S)) {
 			//System.out.println("Move Camera Backwards");
-			camera.moveRelativeZ(-m);
-		} else if(KeyboardInput.isKeyDown(GLFW_KEY_A)) {
-			//System.out.println("Strafe Camera Left");
-			camera.moveRelativeX(-m);
-		} else if(KeyboardInput.isKeyDown(GLFW_KEY_D)) {
-			//System.out.println("Strafe Camera Right");
-			camera.moveRelativeX(m);
-		} else if(KeyboardInput.isKeyDown(GLFW_KEY_LEFT_SHIFT)) {
-			//System.out.println("Move Camera Down");
 			camera.moveRelativeY(-m);
-		} else if(KeyboardInput.isKeyDown(GLFW_KEY_SPACE)) {
+		} 
+		if(KeyboardInput.isKeyDown(GLFW_KEY_A)) {
+			//System.out.println("Strafe Camera Left");
+			camera.moveRelativeX(m);
+		} 
+		if(KeyboardInput.isKeyDown(GLFW_KEY_D)) {
+			//System.out.println("Strafe Camera Right");
+			camera.moveRelativeX(-m);
+		} 
+		if(KeyboardInput.isKeyDown(GLFW_KEY_LEFT_SHIFT)) {
+			//System.out.println("Move Camera Down");
+			camera.moveRelativeZ(-m);
+		} 
+		if(KeyboardInput.isKeyDown(GLFW_KEY_SPACE)) {
 			//System.out.println("Move Camera Up");
-			camera.moveRelativeY(m);
-		} else if (KeyboardInput.isKeyDown(GLFW_KEY_ESCAPE)) {
+			camera.moveRelativeZ(m);
+		} 
+		if (KeyboardInput.isKeyDown(GLFW_KEY_ESCAPE)) {
 			glfwSetInputMode(window.handle, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 		}
 		
@@ -448,9 +456,11 @@ public final class RunFractal {
 		if(glfwGetInputMode(window.handle, GLFW_CURSOR) == GLFW_CURSOR_DISABLED) {
 			camera.setAngle(-MouseInput.y/MOUSECOEFFICIENT, MouseInput.x/MOUSECOEFFICIENT);
 		}
+		
+		//camera.setAngle(0, -Math.PI/2.0);
+		
 		//System.out.println(camera + " Time: " + timeDelta + " Width: " + width + " Height: " + height + " X: " + MouseInput.x + " Y: " + MouseInput.y);
-		System.out.println("X" + camera.getLocation().getX() + " Y" + camera.getLocation().getY() + " Z" + camera.getLocation().getX() + " P" + camera.getPitch() + " Y" + camera.getYaw() + " " + camera.getRelativeY());
-		//System.out.println(new UnitVector3D(0,0));
+		//System.out.println("X" + camera.getLocation().getX() + " Y" + camera.getLocation().getY() + " Z" + camera.getLocation().getZ() + " P" + camera.getPitch() + " Y" + camera.getYaw() + " " + camera.getRelativeY());
 	}
 	
 	public static void main(String[] args) {

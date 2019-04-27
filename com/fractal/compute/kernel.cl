@@ -33,18 +33,30 @@ varfloat DE_Torus(varfloat3 vec, varfloat3 center, varfloat2 t) {
 	return length((varfloat2)(length(p.xz)-t.x, p.y)) - t.y;
 }
 
+varfloat DE_Box(varfloat3 vec, varfloat3 center, varfloat3 b) {
+	varfloat3 d = fabs(vec-center) - b;
+	return length(fmax(d, 0.0)) + fmin(fmax(d.x,fmax(d.y,d.z)),0.0);
+}
+
 varfloat DE(varfloat3 vec) {
 	varfloat dist;
-    
-    //dist = DE_Sphere(vec, (varfloat3)(0, 0, 0), 1);
+	
+	//vec.x = fmod(vec.x, 10);
+	//vec.y = fmod(vec.y, 10);
+	//vec.z = fmod(vec.z, 10);
+	
+    //dist = DE_Box(vec, (varfloat3)(0, 0, 0), (varfloat3)(0.2, 0.2, 0.2));
     dist = DE_Torus(vec, (varfloat3)(0, 0, 0), (varfloat2)(0.20, 0.05));
+	//dist = min(dist, DE_Torus(vec, (varfloat3)(1, 0, 0), (varfloat2)(0.20, 0.05)));
+	//dist = min(dist, DE_Torus(vec, (varfloat3)(-1, 0, 0), (varfloat2)(0.20, 0.05)));
+	
 	//dist = min(dist, DE_Sphere(vec, (varfloat3){0, 0, 4}, 1));
     //dist = min(dist, DE_Sphere(vec, (varfloat3){0, 4, 0}, 1));
     //dist = min(dist, DE_Sphere(vec, (varfloat3){4, 0, 0}, 1));
     //dist = min(dist, DE_Sphere(vec, (varfloat3){4, 4, 0}, 1));
     //dist = min(dist, DE_Sphere(vec, (varfloat3){4, 0, 4}, 1));
     //dist = min(dist, DE_Sphere(vec, (varfloat3){0, 4, 4}, 1));
-    dist = min(dist, DE_Sphere(vec, (varfloat3){4, 4, 4}, 1));
+    //dist = min(dist, DE_Sphere(vec, (varfloat3){4, 4, 4}, 1));
     
     return dist;
 }
@@ -64,23 +76,20 @@ kernel void raymarch(const int width,
 	const varfloat collidethresh = 0.001;
 	const int maxiterations = 100;
 	
+	//varfloat3 color = {_255, _255, _255};
+	
 	unsigned int ix = get_global_id(0);
     unsigned int iy = get_global_id(1);
-    
+	
+	//varfloat y = yaw + fov*atan(2.0*ix/width-1);
 	varfloat y = yaw - fov/2.0 + fov*ix/width;
 	varfloat f = (fov * height) / width;
+	//varfloat p = pitch + f*atan(2.0*iy/height-1);
 	varfloat p = pitch - f/2.0 + f*iy/height;
-	//varfloat p = pitch - fov/2.0 + fov*iy/height;
 	
     varfloat3 position = {px, py, pz};
     
-	varfloat3 direction = {cos(y)*cos(p), -sin(y), -cos(y)*sin(p)};
-	
-	/*	(1, 0, 0) Start
-	 *	(cos(yaw), -sin(yaw), 0) Yaw
-	 *  (cos(yaw)cos(pitch), -sin(yaw), -cos(yaw)sin(pitch)) Pitch
-	 */
-	//INTRINSIC ROTATION: PITCH THEN YAW CURRENTLY YAW THEN PITCH
+	varfloat3 direction = {sin(y)*cos(p), cos(y)*cos(p), sin(p)};
     
     int iterations = 0;
     varfloat currentDist = 1;
@@ -95,7 +104,7 @@ kernel void raymarch(const int width,
 		write_imageui(output, (int2)(ix, iy), (uint4)128);
 	} else {
 		varfloat color = _255*(maxiterations-iterations)/maxiterations;
-		write_imageui(output, (int2)(ix, iy), (uint4)(color, 0, 0, 255));
+		write_imageui(output, (int2)(ix, iy), (uint4)(color, color, color, 255));
 	}
 	
 	//write_imageui(output, (int2)(ix, iy), (uint4)((_255*(maxiterations-iterations))/maxiterations, 0, 0, 255));

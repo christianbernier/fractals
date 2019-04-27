@@ -39,10 +39,10 @@ public class Camera {
 	}
 	
 	public void setAngle(double p, double y) {
-		pitch = p;
-		yaw = y;
-		//pitch = (p < 0 ? p%(Math.PI*2)+2*Math.PI : p%(Math.PI*2));
-		//yaw = (y < 0 ? y%(Math.PI*2)+2*Math.PI : y%(Math.PI*2));
+		//pitch = p;
+		//yaw = y;
+		pitch = (p < 0 ? p%(Math.PI*2)+2*Math.PI : p%(Math.PI*2));
+		yaw = (y < 0 ? y%(Math.PI*2)+2*Math.PI : y%(Math.PI*2));
 		constructRelativeAxes();
 	}
 	
@@ -81,7 +81,7 @@ public class Camera {
 	 * 			[Space]											[Move up / increment relative Y]
 	 * SHIFT AND SPACE ARE COUNTERINTUITIVE BUT THATS HOW IT IS IN FPS GAMES
 	 * 							 
-	 * 						Y+  Z+  Direction vector is Z
+	 * 						Z+  Y+  Direction vector is Y
 	 * 						|  /
 	 * 						| /
 	 * 						|/
@@ -89,9 +89,9 @@ public class Camera {
 	 */
 	
 	public void constructRelativeAxes() {
-		relativeZaxis = new UnitVector3D(pitch, yaw);
-		relativeYaxis = new UnitVector3D(pitch + Math.PI / 2, yaw);
-		relativeXaxis = new UnitVector3D(0, yaw + Math.PI / 2);
+		relativeYaxis = new UnitVector3D(pitch, yaw);
+		relativeZaxis = new UnitVector3D(pitch + Math.PI / 2.0, yaw);
+		relativeXaxis = new UnitVector3D(0, yaw - Math.PI / 2.0);
 	}
 	
 	public void moveRelativeZ(double m) { //move along direction vector
