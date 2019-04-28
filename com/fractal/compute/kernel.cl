@@ -41,22 +41,24 @@ varfloat DE_Box(varfloat3 vec, varfloat3 center, varfloat3 b) {
 varfloat DE(varfloat3 vec) {
 	varfloat dist;
 	
-	//vec.x = fmod(vec.x, 10);
-	//vec.y = fmod(vec.y, 10);
-	//vec.z = fmod(vec.z, 10);
+	vec.x = fmod(fabs(vec.x), 4);
+	vec.y = fmod(fabs(vec.y), 4);
+	vec.z = fmod(fabs(vec.z), 4);
 	
     //dist = DE_Box(vec, (varfloat3)(0, 0, 0), (varfloat3)(0.2, 0.2, 0.2));
-    dist = DE_Torus(vec, (varfloat3)(0, 0, 0), (varfloat2)(0.20, 0.05));
+    //dist = DE_Torus(vec, (varfloat3)(0, 0, 0), (varfloat2)(0.20, 0.05));
 	//dist = min(dist, DE_Torus(vec, (varfloat3)(1, 0, 0), (varfloat2)(0.20, 0.05)));
 	//dist = min(dist, DE_Torus(vec, (varfloat3)(-1, 0, 0), (varfloat2)(0.20, 0.05)));
 	
-	//dist = min(dist, DE_Sphere(vec, (varfloat3){0, 0, 4}, 1));
-    //dist = min(dist, DE_Sphere(vec, (varfloat3){0, 4, 0}, 1));
-    //dist = min(dist, DE_Sphere(vec, (varfloat3){4, 0, 0}, 1));
-    //dist = min(dist, DE_Sphere(vec, (varfloat3){4, 4, 0}, 1));
-    //dist = min(dist, DE_Sphere(vec, (varfloat3){4, 0, 4}, 1));
-    //dist = min(dist, DE_Sphere(vec, (varfloat3){0, 4, 4}, 1));
-    //dist = min(dist, DE_Sphere(vec, (varfloat3){4, 4, 4}, 1));
+	dist = DE_Sphere(vec, (varfloat3)(2, 2, 2), 1);
+	//dist = min(dist, DE_Sphere(vec, (varfloat3)(0, 0, 4), 1));
+    //dist = min(dist, DE_Sphere(vec, (varfloat3)(0, 0, -4), 1));
+    //dist = min(dist, DE_Sphere(vec, (varfloat3)(0, 4, 0), 1));
+    //dist = min(dist, DE_Sphere(vec, (varfloat3)(4, 0, 0), 1));
+    //dist = min(dist, DE_Sphere(vec, (varfloat3)(4, 4, 0), 1));
+    //dist = min(dist, DE_Sphere(vec, (varfloat3)(4, 0, 4), 1));
+    //dist = min(dist, DE_Sphere(vec, (varfloat3)(0, 4, 4), 1));
+    //dist = min(dist, DE_Sphere(vec, (varfloat3)(4, 4, 4), 1));
     
     return dist;
 }
@@ -74,7 +76,7 @@ kernel void raymarch(const int width,
 					   const int maxiterations,*/) {
 					   
 	const varfloat collidethresh = 0.001;
-	const int maxiterations = 100;
+	const int maxiterations = 200;
 	
 	//varfloat3 color = {_255, _255, _255};
 	
