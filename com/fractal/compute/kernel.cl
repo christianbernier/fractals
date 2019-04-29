@@ -41,16 +41,16 @@ varfloat DE_Box(varfloat3 vec, varfloat3 center, varfloat3 b) {
 varfloat DE(varfloat3 vec) {
 	varfloat dist;
 	
-	vec.x = fmod(fabs(vec.x), 4);
-	vec.y = fmod(fabs(vec.y), 4);
-	vec.z = fmod(fabs(vec.z), 4);
+	vec.x = fmod(fabs(vec.x), 2);
+	vec.y = fmod(fabs(vec.y), 2);
+	vec.z = fmod(fabs(vec.z), 2);
 	
     //dist = DE_Box(vec, (varfloat3)(0, 0, 0), (varfloat3)(0.2, 0.2, 0.2));
-    //dist = DE_Torus(vec, (varfloat3)(0, 0, 0), (varfloat2)(0.20, 0.05));
+    dist = DE_Torus(vec, (varfloat3)(1, 1, 1), (varfloat2)(0.20, 0.05));
 	//dist = min(dist, DE_Torus(vec, (varfloat3)(1, 0, 0), (varfloat2)(0.20, 0.05)));
 	//dist = min(dist, DE_Torus(vec, (varfloat3)(-1, 0, 0), (varfloat2)(0.20, 0.05)));
 	
-	dist = DE_Sphere(vec, (varfloat3)(2, 2, 2), 1);
+	//dist = DE_Sphere(vec, (varfloat3)(2, 2, 2), 1);
 	//dist = min(dist, DE_Sphere(vec, (varfloat3)(0, 0, 4), 1));
     //dist = min(dist, DE_Sphere(vec, (varfloat3)(0, 0, -4), 1));
     //dist = min(dist, DE_Sphere(vec, (varfloat3)(0, 4, 0), 1));

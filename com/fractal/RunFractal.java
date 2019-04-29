@@ -125,11 +125,11 @@ public final class RunFractal {
     private static boolean rebuild;
 	public static boolean running = false;
 	public static GLFWWindow window;
-	public static int width = 480;
-	public static int height = 360;
+	public static int width = 680;
+	public static int height = 560;
 	public static double fov = Math.PI/3;
 	private static final double MOUSECOEFFICIENT = 200;
-	private static final double KEYBOARDCOEFFICIENT = 0.1;
+	private static final double KEYBOARDCOEFFICIENT = 0.2;
 	
 	private static final GLFWKeyCallback keyCallback = new KeyboardInput();
 	private static final GLFWCursorPosCallback cursorCallback = new MouseInput(width, height);
@@ -412,7 +412,7 @@ public final class RunFractal {
 
 	public static void handleInput(double timeDelta) {
 		glfwPollEvents();
-		double m = 0.02; //KEYBOARDCOEFFICIENT * timeDelta
+		double m = KEYBOARDCOEFFICIENT;// * timeDelta
 		if(KeyboardInput.isKeyDown(GLFW_KEY_Q)) {
 			System.out.println("Roll Camera CCW");
 		}
@@ -451,8 +451,16 @@ public final class RunFractal {
 			glfwSetInputMode(window.handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 		}
 		
-		//width = SizeInput.width;
-		//height = SizeInput.height;
+		//if(Platform.get() == WINDOWS) {
+			
+		if(SizeInput.width != width || SizeInput.height != height) {
+			width = SizeInput.width;
+			height = SizeInput.height;
+			rebuild = true;
+		}
+			
+		//}
+		
 		if(glfwGetInputMode(window.handle, GLFW_CURSOR) == GLFW_CURSOR_DISABLED) {
 			camera.setAngle(-MouseInput.y/MOUSECOEFFICIENT, MouseInput.x/MOUSECOEFFICIENT);
 		}
