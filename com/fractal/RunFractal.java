@@ -11,6 +11,7 @@ import java.nio.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.*;
+import java.awt.Font;
 
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
@@ -125,11 +126,11 @@ public final class RunFractal {
     private static boolean rebuild;
 	public static boolean running = false;
 	public static GLFWWindow window;
-	public static int width = 680;
-	public static int height = 560;
+	public static int width = 320;
+	public static int height = 200;
 	public static double fov = Math.PI/3;
 	private static final double MOUSECOEFFICIENT = 200;
-	private static final double KEYBOARDCOEFFICIENT = 0.2;
+	private static final double KEYBOARDCOEFFICIENT = 0.002;
 	
 	private static final GLFWKeyCallback keyCallback = new KeyboardInput();
 	private static final GLFWCursorPosCallback cursorCallback = new MouseInput(width, height);
@@ -412,7 +413,7 @@ public final class RunFractal {
 
 	public static void handleInput(double timeDelta) {
 		glfwPollEvents();
-		double m = KEYBOARDCOEFFICIENT;// * timeDelta
+		double m = KEYBOARDCOEFFICIENT * timeDelta;
 		if(KeyboardInput.isKeyDown(GLFW_KEY_Q)) {
 			System.out.println("Roll Camera CCW");
 		}
@@ -450,25 +451,37 @@ public final class RunFractal {
 		if(glfwGetMouseButton(window.handle, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
 			glfwSetInputMode(window.handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 		}
-		
 		//if(Platform.get() == WINDOWS) {
 			
 		if(SizeInput.width != width || SizeInput.height != height) {
 			width = SizeInput.width;
 			height = SizeInput.height;
+			IntBuffer size = BufferUtils.createIntBuffer(2);
+			nglfwGetFramebufferSize(window.handle, memAddress(size), memAddress(size) + 4);
+	        fbw = size.get(0);
+	        fbh = size.get(1);
+	        initGLObjects();
 			rebuild = true;
 		}
 			
 		//}
 		
 		if(glfwGetInputMode(window.handle, GLFW_CURSOR) == GLFW_CURSOR_DISABLED) {
-			camera.setAngle(-MouseInput.y/MOUSECOEFFICIENT, MouseInput.x/MOUSECOEFFICIENT);
+			if(-MouseInput.y/MOUSECOEFFICIENT > Math.PI/2.0) {
+				glfwSetCursorPos(window.handle, MouseInput.x, -Math.PI/2.0*MOUSECOEFFICIENT);
+			} else if(-MouseInput.y/MOUSECOEFFICIENT < -Math.PI/2.0) {
+				glfwSetCursorPos(window.handle, MouseInput.x, Math.PI/2.0*MOUSECOEFFICIENT);
+			} else {
+				camera.setPitch(-MouseInput.y/MOUSECOEFFICIENT);
+			}
+			camera.setYaw(MouseInput.x/MOUSECOEFFICIENT);
+			camera.constructRelativeAxes();
 		}
 		
 		//camera.setAngle(0, -Math.PI/2.0);
 		
 		//System.out.println(camera + " Time: " + timeDelta + " Width: " + width + " Height: " + height + " X: " + MouseInput.x + " Y: " + MouseInput.y);
-		//System.out.println("X" + camera.getLocation().getX() + " Y" + camera.getLocation().getY() + " Z" + camera.getLocation().getZ() + " P" + camera.getPitch() + " Y" + camera.getYaw() + " " + camera.getRelativeY());
+		System.out.println("X" + camera.getLocation().getX() + " Y" + camera.getLocation().getY() + " Z" + camera.getLocation().getZ() + " P" + camera.getPitch()*180.0/Math.PI + " Y" + camera.getYaw()*180.0/Math.PI + " " + camera.getRelativeY());
 	}
 	
 	public static void main(String[] args) {
@@ -623,42 +636,7 @@ public final class RunFractal {
     }
 
     public static void render_Graphics() {
-    	// Generate and bind a Vertex Array
-    	//vao = glGenVertexArrays();
-    	//glBindVertexArray(vao);
-
-    	// The vertices of our Triangle
-    	float[] vertices = new float[]
-    	{
-    	    +0.0f, +0.8f,    // Top coordinate
-    	    -0.8f, -0.8f,    // Bottom-left coordinate
-    	    +0.8f, -0.8f     // Bottom-right coordinate
-    	};
-
-    	// Create a FloatBuffer of vertices
-    	FloatBuffer verticesBuffer = BufferUtils.createFloatBuffer(vertices.length);
-    	verticesBuffer.put(vertices).flip();
-
-    	// Create a Buffer Object and upload the vertices buffer
-    	//vbo = glGenBuffers();
-    	//glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    	glBufferData(GL_ARRAY_BUFFER, verticesBuffer, GL_STATIC_DRAW);
-
-    	// Point the buffer at location 0, the location we set
-    	// inside the vertex shader. You can use any location
-    	// but the locations should match
-    	glVertexAttribPointer(1, 2, GL_FLOAT, false, 0, 0);
-    	glBindVertexArray(1);
     	
-    	glBindVertexArray(vao);
-        glEnableVertexAttribArray(1);
-
-        // Draw a triangle of 3 vertices
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-
-        // Disable our location
-        glDisableVertexAttribArray(1);
-        glBindVertexArray(1);
 	}
     
     private interface CLReleaseFunction {

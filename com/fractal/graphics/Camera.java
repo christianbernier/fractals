@@ -10,40 +10,49 @@ public class Camera {
 	Vector3D position;
 	double yaw;
 	double pitch;
+	double pitchtemp;
 	UnitVector3D relativeZaxis; //Where the camera is pointing
 	UnitVector3D relativeXaxis;
 	UnitVector3D relativeYaxis;
 	
 	public Camera() {
 		position = new Vector3D();
-		setAngle(0, 0);
+		pitch = 0;
+		yaw = 0;
+		constructRelativeAxes();
 	}
 	
 	public Camera(Vector3D v) {
 		position = new Vector3D(v);
-		setAngle(0, 0);
+		pitch = 0;
+		yaw = 0;
+		constructRelativeAxes();
 	}
 	
 	public Camera(Vector3D v, double p, double y) {
 		position = new Vector3D(v);
-		setAngle(p, y);
+		pitch = p;
+		setYaw(y);
+		constructRelativeAxes();
 	}
 	
 	public Camera(double p, double y) {
 		position = new Vector3D();
-		setAngle(p, y);
+		pitch = p;
+		setYaw(y);
+		constructRelativeAxes();
 	}
 	
 	public void setLocation(Vector3D v) {
 		position = new Vector3D(v);
 	}
 	
-	public void setAngle(double p, double y) {
-		//pitch = p;
-		//yaw = y;
-		pitch = (p < 0 ? p%(Math.PI*2)+2*Math.PI : p%(Math.PI*2));
+	public void setPitch(double p) {
+		pitch = p;
+	}
+	
+	public void setYaw(double y) {
 		yaw = (y < 0 ? y%(Math.PI*2)+2*Math.PI : y%(Math.PI*2));
-		constructRelativeAxes();
 	}
 	
 	public Vector3D getLocation() {
@@ -91,7 +100,12 @@ public class Camera {
 	public void constructRelativeAxes() {
 		relativeYaxis = new UnitVector3D(pitch, yaw);
 		relativeZaxis = new UnitVector3D(pitch + Math.PI / 2.0, yaw);
-		relativeXaxis = new UnitVector3D(0, yaw - Math.PI / 2.0);
+		//if(pitch >= 0.5*Math.PI && pitch < 1.5*Math.PI) {
+		//	relativeXaxis = new UnitVector3D(0, yaw + Math.PI / 2.0);
+		//} else {
+			relativeXaxis = new UnitVector3D(0, yaw - Math.PI / 2.0);
+		//}
+		
 	}
 	
 	public void moveRelativeZ(double m) { //move along direction vector
