@@ -10,18 +10,24 @@
     #define varfloat3 double3
 	#define varfloat2 double2
     #define _255 255.0
+	#define _0 0.0
 #else
     #define varfloat float
     #define varfloat3 float3
 	#define varfloat2 float2
     #define _255 255.0f
+	#define _0 0.0f
 #endif
+
+#define collidethresh 0.001
+#define maxiterations 200
 
 //DISTANCE ESTIMATORS https://iquilezles.org/www/articles/distfunctions/distfunctions.htm
 //OPENCL SPECIFICATION https://www.khronos.org/registry/OpenCL/specs/opencl-2.1.pdf
 
 varfloat DE_Sphere(varfloat3 vec, varfloat3 center, varfloat radius);
 varfloat DE_Torus(varfloat3 vec, varfloat3 center, varfloat2 t);
+varfloat DE_Box(varfloat3 vec, varfloat3 center, varfloat3 b);
 varfloat DE(varfloat3 vec);
 
 varfloat DE_Sphere(varfloat3 vec, varfloat3 center, varfloat radius) { 
@@ -35,7 +41,7 @@ varfloat DE_Torus(varfloat3 vec, varfloat3 center, varfloat2 t) {
 
 varfloat DE_Box(varfloat3 vec, varfloat3 center, varfloat3 b) {
 	varfloat3 d = fabs(vec-center) - b;
-	return length(fmax(d, 0.0)) + fmin(fmax(d.x,fmax(d.y,d.z)),0.0);
+	return length(fmax(d, _0)) + fmin(fmax(d.x,fmax(d.y,d.z)),_0);
 }
 
 varfloat DE(varfloat3 vec) {
@@ -45,8 +51,8 @@ varfloat DE(varfloat3 vec) {
 	vec.y = fmod(fabs(vec.y), 1);
 	vec.z = fmod(fabs(vec.z), 1);
 	
-    //dist = DE_Box(vec, (varfloat3)(0, 0, 0), (varfloat3)(0.2, 0.2, 0.2));
-    dist = DE_Torus(vec, (varfloat3)(0.5, 0.5, 0.5), (varfloat2)(0.20, 0.05));
+    dist = DE_Box(vec, (varfloat3)(0.5, 0.5, 0.5), (varfloat3)(0.2, 0.2, 0.2));
+    //dist = DE_Torus(vec, (varfloat3)(0.5, 0.5, 0.5), (varfloat2)(0.20, 0.05));
 	//dist = min(dist, DE_Torus(vec, (varfloat3)(1, 0, 0), (varfloat2)(0.20, 0.05)));
 	//dist = min(dist, DE_Torus(vec, (varfloat3)(-1, 0, 0), (varfloat2)(0.20, 0.05)));
 	
@@ -74,9 +80,6 @@ kernel void raymarch(const int width,
 					   const varfloat yaw/*,
 					   const varfloat collidethresh, 
 					   const int maxiterations,*/) {
-					   
-	const varfloat collidethresh = 0.001;
-	const int maxiterations = 200;
 	
 	//varfloat3 color = {_255, _255, _255};
 	
@@ -102,12 +105,12 @@ kernel void raymarch(const int width,
     	iterations++;
     }
 	
-	if(iterations >= maxiterations) {
-		write_imageui(output, (int2)(ix, iy), (uint4)128);
-	} else {
+	//if(iterations >= maxiterations) {
+	//	write_imageui(output, (int2)(ix, iy), (uint4)128);
+	//} else {
 		varfloat color = _255*(maxiterations-iterations)/maxiterations;
 		write_imageui(output, (int2)(ix, iy), (uint4)(color, color, color, 255));
-	}
+	//}
 	
 	//write_imageui(output, (int2)(ix, iy), (uint4)((_255*(maxiterations-iterations))/maxiterations, 0, 0, 255));
 }
