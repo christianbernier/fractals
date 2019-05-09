@@ -26,6 +26,14 @@ public class Vector3D{
 		return "x: " + x + " y: " + y + " z: " + z + " magnitude: " + getMagnitude();
 	}
 	
+	public double[] getArray() {
+		return new double[] {x, y, z};
+	}
+	
+	public float[] getfArray() {
+		return new float[] {(float)x, (float)y, (float)z};
+	}
+	
 	public double getX() {
 		return x;
 	}

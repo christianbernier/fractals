@@ -81,6 +81,8 @@ public final class RunFractal {
     private static CLCapabilities deviceCaps;
 
     private static CLContextCallback clContextCB;
+    
+    private static Callback debugProc;
 
     private static long clContext;
     //private final long clColorMap;
@@ -88,6 +90,7 @@ public final class RunFractal {
     private static long clProgram;
     private static long clKernel;
     private static long clTexture;
+    private static long matrixhandle;
 
     private static final PointerBuffer kernel2DGlobalWorkSize = BufferUtils.createPointerBuffer(2);
 
@@ -131,15 +134,17 @@ public final class RunFractal {
 	public static double fov = Math.PI/3;
 	private static final double MOUSECOEFFICIENT = 200;
 	private static final double KEYBOARDCOEFFICIENT = 0.002;
+	private static final Set<String> params = new HashSet<>(8);
 	
 	private static final GLFWKeyCallback keyCallback = new KeyboardInput();
 	private static final GLFWCursorPosCallback cursorCallback = new MouseInput(width, height);
 	private static final GLFWWindowSizeCallback sizeCallback = new SizeInput();
-	private static DoubleBuffer guiAxesCoords = BufferUtils.createDoubleBuffer(6);
+	//private static DoubleBuffer guiAxesCoords = BufferUtils.createDoubleBuffer(6);
 	
 	private static Camera camera = new Camera();
+	private static FloatBuffer cameraMatrix = BufferUtils.createFloatBuffer(9);
 	
-	private static PixelObject pixels;
+	//private static PixelObject pixels;
 	
 	public static void init_Graphics() {
 		running = true;
@@ -151,7 +156,7 @@ public final class RunFractal {
         }
         
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-		glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE); //use glfwShowWindow(window.handle); heighten initialization finishes
+		glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE); //use glfwShowWindow(window.handle); when initialization finishes
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         if (Platform.get() == Platform.MACOSX) {
             glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
@@ -218,7 +223,7 @@ public final class RunFractal {
             }
         }
         
-        deviceType = !hasGPU ? CL_DEVICE_TYPE_CPU : CL_DEVICE_TYPE_GPU;
+        deviceType = params.contains("forceCPU") || !hasGPU ? CL_DEVICE_TYPE_CPU : CL_DEVICE_TYPE_GPU;
 
         String ID = "Realtime Fractal Renderer: " + platformID + " - " + (deviceType == CL_DEVICE_TYPE_CPU ? "CPU" : "GPU");
         
@@ -252,9 +257,14 @@ public final class RunFractal {
         glfwMakeContextCurrent(window.handle);
         GLCapabilities glCaps = GL.createCapabilities();
         if (!glCaps.OpenGL30) {
-            throw new RuntimeException("OpenGL 3.0 is required to run this demo.");
+            throw new RuntimeException("OpenGL 3.0 is required");
         }
-
+        
+        if (params.contains("debugGL")) {
+            glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+            debugProc = GLUtil.setupDebugMessageCallback();
+        }
+        
         glfwSwapInterval(0);
 
         errcode_ret = BufferUtils.createIntBuffer(1);
@@ -430,11 +440,11 @@ public final class RunFractal {
 		} 
 		if(KeyboardInput.isKeyDown(GLFW_KEY_A)) {
 			//System.out.println("Strafe Camera Left");
-			camera.moveRelativeX(m);
+			camera.moveRelativeX(-m);
 		} 
 		if(KeyboardInput.isKeyDown(GLFW_KEY_D)) {
 			//System.out.println("Strafe Camera Right");
-			camera.moveRelativeX(-m);
+			camera.moveRelativeX(m);
 		} 
 		if(KeyboardInput.isKeyDown(GLFW_KEY_LEFT_SHIFT)) {
 			//System.out.println("Move Camera Down");
@@ -447,24 +457,26 @@ public final class RunFractal {
 		if (KeyboardInput.isKeyDown(GLFW_KEY_ESCAPE)) {
 			glfwSetInputMode(window.handle, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 		}
+		if (KeyboardInput.isKeyDown(GLFW_KEY_P)) {
+            doublePrecision = !doublePrecision;
+            log("DOUBLE PRECISION IS NOW: " + (doublePrecision ? "ON" : "OFF"));
+            rebuild = true;
+		}
 		
 		if(glfwGetMouseButton(window.handle, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
 			glfwSetInputMode(window.handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 		}
-		//if(Platform.get() == WINDOWS) {
 			
-		if(SizeInput.width != width || SizeInput.height != height) {
+		if(Platform.get() == Platform.WINDOWS && (SizeInput.width != width || SizeInput.height != height)) {
 			width = SizeInput.width;
 			height = SizeInput.height;
 			IntBuffer size = BufferUtils.createIntBuffer(2);
 			nglfwGetFramebufferSize(window.handle, memAddress(size), memAddress(size) + 4);
 	        fbw = size.get(0);
 	        fbh = size.get(1);
-	        initGLObjects();
+	        shouldInitBuffers = true;
 			rebuild = true;
 		}
-			
-		//}
 		
 		if(glfwGetInputMode(window.handle, GLFW_CURSOR) == GLFW_CURSOR_DISABLED) {
 			if(-MouseInput.y/MOUSECOEFFICIENT > Math.PI/2.0) {
@@ -485,6 +497,7 @@ public final class RunFractal {
 	}
 	
 	public static void main(String[] args) {
+		parseArgs(args);
 		init_Graphics();
 		init_Compute();
 		glfwShowWindow(window.handle);
@@ -683,23 +696,21 @@ public final class RunFractal {
         kernel2DGlobalWorkSize.put(0, width).put(1, height);
 
         // start computation
-
+        
+        camera.getMatrix(cameraMatrix);
+        clEnqueueWriteBuffer(clQueue, matrixhandle, true, 0, cameraMatrix, null, null);
         clSetKernelArg1i(clKernel, 0, width);
         clSetKernelArg1i(clKernel, 1, height);
         if (!is64bit || !isDoubleFPAvailable(deviceCaps)) {
-            clSetKernelArg1f(clKernel, 3, (float)fov);   	
+            clSetKernelArg1f(clKernel, 3, (float)fov);   
             clSetKernelArg1f(clKernel, 4, (float)camera.getLocation().getX());
             clSetKernelArg1f(clKernel, 5, (float)camera.getLocation().getY());
             clSetKernelArg1f(clKernel, 6, (float)camera.getLocation().getZ());
-            clSetKernelArg1f(clKernel, 7, (float)camera.getPitch());
-            clSetKernelArg1f(clKernel, 8, (float)camera.getYaw());
         } else {
         	clSetKernelArg1d(clKernel, 3, fov);   	
             clSetKernelArg1d(clKernel, 4, camera.getLocation().getX());	
             clSetKernelArg1d(clKernel, 5, camera.getLocation().getY());
             clSetKernelArg1d(clKernel, 6, camera.getLocation().getZ());
-            clSetKernelArg1d(clKernel, 7, camera.getPitch());
-            clSetKernelArg1d(clKernel, 8, camera.getYaw());
         }
 
         // acquire GL objects, and enqueue a kernel with a probe from the list
@@ -815,6 +826,10 @@ public final class RunFractal {
         // init kernel with constants
         clKernel = clCreateKernel(clProgram, "raymarch", errcode_ret);
         checkCLError(errcode_ret);
+        
+        //create camera matrix buffer
+        matrixhandle = clCreateBuffer(clContext, CL_MEM_READ_ONLY, 128, errcode_ret);
+        checkCLError(errcode_ret);
     }
 
     private static void initGLObjects() {
@@ -869,6 +884,41 @@ public final class RunFractal {
 
     private static void setKernelConstants() {
     	clSetKernelArg1p(clKernel, 2, clTexture);
-    	//clSetKernelArg1i(clKernel, 9, 20);
+    	clSetKernelArg1p(clKernel, 7, matrixhandle);
+    }
+    
+    private static void parseArgs(String... args) {
+        for (int i = 0; i < args.length; i++) {
+            String arg = args[i];
+
+            if (arg.charAt(0) != '-' && arg.charAt(0) != '/') {
+                throw new IllegalArgumentException("Invalid command-line argument: " + args[i]);
+            }
+
+            String param = arg.substring(1);
+
+            if ("forceCPU".equalsIgnoreCase(param)) {
+                params.add("forceCPU");
+            } else if ("debugGL".equalsIgnoreCase(param)) {
+                params.add("debugGL");
+            } else if ("iterations".equalsIgnoreCase(param)) {
+                
+            } else if ("res".equalsIgnoreCase(param)) {
+                if (args.length < i + 2 + 1) {
+                    throw new IllegalArgumentException("Invalid res argument specified.");
+                }
+
+                try {
+                    width = Integer.parseInt(args[++i]);
+                    height = Integer.parseInt(args[++i]);
+
+                    if (width < 1 || height < 1) {
+                        throw new IllegalArgumentException("Invalid res dimensions specified.");
+                    }
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException("Invalid res dimensions specified.");
+                }
+            }
+        }
     }
 }

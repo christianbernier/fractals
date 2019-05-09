@@ -2,9 +2,7 @@ package com.fractal.graphics;
 
 import com.fractal.compute.Vector3D;
 import com.fractal.compute.UnitVector3D;
-import java.nio.*;
-
-import org.lwjgl.BufferUtils;
+import java.nio.FloatBuffer;
 
 public class Camera {
 	Vector3D position;
@@ -98,14 +96,18 @@ public class Camera {
 	 */
 	
 	public void constructRelativeAxes() {
+		relativeXaxis = new UnitVector3D(0, yaw+Math.PI / 2.0);
 		relativeYaxis = new UnitVector3D(pitch, yaw);
-		relativeZaxis = new UnitVector3D(pitch + Math.PI / 2.0, yaw);
-		//if(pitch >= 0.5*Math.PI && pitch < 1.5*Math.PI) {
-		//	relativeXaxis = new UnitVector3D(0, yaw + Math.PI / 2.0);
-		//} else {
-			relativeXaxis = new UnitVector3D(0, yaw - Math.PI / 2.0);
-		//}
-		
+		relativeZaxis = new UnitVector3D(0, 0, 1); //UP VECTOR
+	}
+	
+	public void getMatrix(FloatBuffer coords) {
+		UnitVector3D cu = relativeYaxis.cross(relativeZaxis).normalize(); //cp is up cw is dir
+		Vector3D cv = cu.cross(relativeYaxis);
+		coords.put(cu.getfArray());
+		coords.put(cv.getfArray());
+		coords.put(relativeYaxis.getfArray());
+		coords.flip();
 	}
 	
 	public void moveRelativeZ(double m) { //move along direction vector
@@ -120,7 +122,7 @@ public class Camera {
 		position.addSelf(relativeXaxis.scale(m));
 	}
 	
-	public void guiAxes(DoubleBuffer coords) {
+	/*public void guiAxes(DoubleBuffer coords) {
 		//UnitVector3D orthogonalYaxis = new UnitVector3D(pitch + Math.PI / 2, yaw);
 		coords = BufferUtils.createDoubleBuffer(6);
 		coords.put((new UnitVector3D(1, 0, 0)).dot(relativeXaxis));
@@ -129,5 +131,5 @@ public class Camera {
 		coords.put((new UnitVector3D(0, 1, 0)).dot(relativeYaxis));
 		coords.put((new UnitVector3D(0, 0, 1)).dot(relativeXaxis));
 		coords.put((new UnitVector3D(0, 0, 1)).dot(relativeYaxis));
-	}
+	}*/
 }
