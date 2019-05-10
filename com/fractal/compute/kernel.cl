@@ -20,7 +20,7 @@
 #endif
 
 #define collidethresh 0.001
-#define maxiterations 200
+#define maxrayiterations 200
 
 //DISTANCE ESTIMATORS https://iquilezles.org/www/articles/distfunctions/distfunctions.htm
 //OPENCL SPECIFICATION https://www.khronos.org/registry/OpenCL/specs/opencl-2.1.pdf
@@ -28,7 +28,9 @@
 varfloat DE_Sphere(varfloat3 vec, varfloat3 center, varfloat radius);
 varfloat DE_Torus(varfloat3 vec, varfloat3 center, varfloat2 t);
 varfloat DE_Box(varfloat3 vec, varfloat3 center, varfloat3 b);
-varfloat DE(varfloat3 vec);
+varfloat DE_Sponge(varfloat3 vec);
+varfloat DE_Mandelbulb(varfloat3 vec, int* i);
+//varfloat DE(varfloat3 vec);
 
 varfloat DE_Sphere(varfloat3 vec, varfloat3 center, varfloat radius) { 
 	return distance(vec, center) - radius;
@@ -44,11 +46,13 @@ varfloat DE_Box(varfloat3 vec, varfloat3 center, varfloat3 b) {
 	return length(fmax(d, _0)) + fmin(fmax(d.x,fmax(d.y,d.z)),_0);
 }
 
-#define iters 10
+#define DE_Iters 50
+#define bailout 1.5
+#define power 8
 
-varfloat DE(varfloat3 vec) {
+varfloat DE_Sponge(varfloat3 vec) {
 	varfloat t;
-	for(int n = 0; n < iters; n++){
+	for(int n = 0; n < DE_Iters; n++){
 		vec = fabs(vec);
 		if(vec.x < vec.y) {
 			t = vec.x;
@@ -65,13 +69,46 @@ varfloat DE(varfloat3 vec) {
 			vec.x = vec.y;
 			vec.y = t;
 		}
-		vec = 3.0 * vec - (varfloat3)(2.0, 2.0, 2.0);
-		if(vec.z < -1.0) {
-			vec.z += 2.0;
+		vec = 3.0f * vec - (varfloat3)(2.0f, 2.0f, 2.0f);
+		if(vec.z < -1.0f) {
+			vec.z += 2.0f;
 		}
 	}
-	return (length(vec)-1.5)*pow(3.0, -(varfloat)iters);
+	return (length(vec)-1.5f)*pow(3.0f, -(varfloat)DE_Iters);
 }
+
+varfloat DE_Mandelbulb(varfloat3 vec, int* iterations) {
+	varfloat3 z = vec;
+	varfloat dr = 1.0f;
+	varfloat r = _0;
+	int i;
+	for (i = 0; i < DE_Iters; i++) {
+		r = length(z);
+		if (r > bailout) break;
+		
+		// convert to polar coordinates
+		varfloat theta = acos(z.z/r);
+		varfloat phi = atan(z.y/z.x);
+		dr =  pow(r, power-1.0f)*power*dr + 1.0f;
+		
+		// scale and rotate the point
+		varfloat zr = pow(r,power);
+		theta = theta*power;
+		phi = phi*power;
+		
+		// convert back to cartesian coordinates
+		z = zr*(varfloat3)(sin(theta)*cos(phi), sin(phi)*sin(theta), cos(theta));
+		z += vec;
+	}
+	if(i > iterations) {
+		iterations = i;
+	}
+	return 0.5f*log(r)*r/dr;
+}
+
+/*varfloat DE(varfloat3 vec) {
+	
+}*/
 
 kernel void raymarch(const int width, 
 					 const int height,
@@ -110,15 +147,18 @@ kernel void raymarch(const int width,
     
 	//direction = {0, 1, 0};
 	
-    int iterations = 0;
+    int rayiterations = 0;
     varfloat currentDist = 1;
     
-    while(iterations < maxiterations && currentDist > collidethresh) {
-    	currentDist = DE(position);
+	int bulbiterations = 0;
+	
+    while(rayiterations < maxrayiterations && currentDist > collidethresh) {
+    	currentDist = DE_Mandelbulb(position, &bulbiterations);
 		position += direction * currentDist;
-    	iterations++;
+    	rayiterations++;
     }
 	
-	varfloat color = _255*(maxiterations-iterations)/maxiterations;
+	varfloat color = _255*(maxrayiterations-rayiterations)/maxrayiterations;
+	//varfloat color = _255*(DE_Iters-bulbiterations)/(DE_Iters);
 	write_imageui(output,  pixelcoords, (uint4)(color, color, color, 255));
 }

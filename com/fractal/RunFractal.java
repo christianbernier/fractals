@@ -129,8 +129,8 @@ public final class RunFractal {
     private static boolean rebuild;
 	public static boolean running = false;
 	public static GLFWWindow window;
-	public static int width = 320;
-	public static int height = 200;
+	public static int width = 640;
+	public static int height = 480;
 	public static double fov = Math.PI/3;
 	private static final double MOUSECOEFFICIENT = 200;
 	private static final double KEYBOARDCOEFFICIENT = 0.002;
@@ -493,7 +493,7 @@ public final class RunFractal {
 		//camera.setAngle(0, -Math.PI/2.0);
 		
 		//System.out.println(camera + " Time: " + timeDelta + " Width: " + width + " Height: " + height + " X: " + MouseInput.x + " Y: " + MouseInput.y);
-		System.out.println("X" + camera.getLocation().getX() + " Y" + camera.getLocation().getY() + " Z" + camera.getLocation().getZ() + " P" + camera.getPitch()*180.0/Math.PI + " Y" + camera.getYaw()*180.0/Math.PI + " " + camera.getRelativeY());
+		//System.out.println("X" + camera.getLocation().getX() + " Y" + camera.getLocation().getY() + " Z" + camera.getLocation().getZ() + " P" + camera.getPitch()*180.0/Math.PI + " Y" + camera.getYaw()*180.0/Math.PI + " " + camera.getRelativeY());
 	}
 	
 	public static void main(String[] args) {
