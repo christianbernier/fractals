@@ -39,3 +39,12 @@ A project for AP CS, where we render 3D fractals using distance estimators and r
   <li>The mouse can be released by pressing ESC and recaptured by clicking anywhere in the window</li>
   <li>Lots of distortion is present along the Z axis (when rendering objects above and below the camera) but none along the X and Y axes for some reason</li>
 </ul>
+
+## Week 5 Update (5/10)
+<ul>
+  <li>All distortion eliminated</li>
+  <li>First Fractals! Here is a Mandelbulb rendering that we are quite proud of:
+    
+  ![img](https://raw.githubusercontent.com/christianbernier/fractals/master/sample3.png)</li>
+</ul>
+
