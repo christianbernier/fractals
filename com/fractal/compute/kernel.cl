@@ -44,29 +44,33 @@ varfloat DE_Box(varfloat3 vec, varfloat3 center, varfloat3 b) {
 	return length(fmax(d, _0)) + fmin(fmax(d.x,fmax(d.y,d.z)),_0);
 }
 
+#define iters 10
+
 varfloat DE(varfloat3 vec) {
-	varfloat dist;
-	
-	vec.x = fmod(fabs(vec.x), 1);
-	vec.y = fmod(fabs(vec.y), 1);
-	vec.z = fmod(fabs(vec.z), 1);
-	
-    //dist = DE_Box(vec, (varfloat3)(0.5, 0.5, 0.5), (varfloat3)(0.2, 0.2, 0.2));
-    dist = DE_Torus(vec, (varfloat3)(0.5, 0.5, 0.5), (varfloat2)(0.20, 0.05));
-	//dist = min(dist, DE_Torus(vec, (varfloat3)(1, 0, 0), (varfloat2)(0.20, 0.05)));
-	//dist = min(dist, DE_Torus(vec, (varfloat3)(-1, 0, 0), (varfloat2)(0.20, 0.05)));
-	
-	//dist = DE_Sphere(vec, (varfloat3)(2, 2, 2), 1);
-	//dist = min(dist, DE_Sphere(vec, (varfloat3)(0, 0, 4), 1));
-    //dist = min(dist, DE_Sphere(vec, (varfloat3)(0, 0, -4), 1));
-    //dist = min(dist, DE_Sphere(vec, (varfloat3)(0, 4, 0), 1));
-    //dist = min(dist, DE_Sphere(vec, (varfloat3)(4, 0, 0), 1));
-    //dist = min(dist, DE_Sphere(vec, (varfloat3)(4, 4, 0), 1));
-    //dist = min(dist, DE_Sphere(vec, (varfloat3)(4, 0, 4), 1));
-    //dist = min(dist, DE_Sphere(vec, (varfloat3)(0, 4, 4), 1));
-    //dist = min(dist, DE_Sphere(vec, (varfloat3)(4, 4, 4), 1));
-    
-    return dist;
+	varfloat t;
+	for(int n = 0; n < iters; n++){
+		vec = fabs(vec);
+		if(vec.x < vec.y) {
+			t = vec.x;
+			vec.x = vec.y;
+			vec.y = t;
+		}
+		if(vec.y < vec.z) {
+			t = vec.y;
+			vec.y = vec.z;
+			vec.z = t;
+		}
+		if(vec.x < vec.y) {
+			t = vec.x;
+			vec.x = vec.y;
+			vec.y = t;
+		}
+		vec = 3.0 * vec - (varfloat3)(2.0, 2.0, 2.0);
+		if(vec.z < -1.0) {
+			vec.z += 2.0;
+		}
+	}
+	return (length(vec)-1.5)*pow(3.0, -(varfloat)iters);
 }
 
 kernel void raymarch(const int width, 
@@ -76,9 +80,7 @@ kernel void raymarch(const int width,
 					 const varfloat px, 
 					 const varfloat py, 
 					 const varfloat pz,
-					 __constant float *m/*,
-					 const varfloat collidethresh, 
-					 const int maxiterations,*/) {
+					 __constant float *m) {
 	
 	int2 pixelcoords = {get_global_id(0), get_global_id(1)};
 	
