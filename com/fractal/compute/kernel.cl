@@ -11,12 +11,14 @@
 	#define varfloat2 double2
     #define _255 255.0
 	#define _0 0.0
+	#define _1 1.0
 #else
     #define varfloat float
     #define varfloat3 float3
 	#define varfloat2 float2
     #define _255 255.0f
 	#define _0 0.0f
+	#define _1 1.0f
 #endif
 
 #define collidethresh 0.001
@@ -29,7 +31,8 @@ varfloat DE_Sphere(varfloat3 vec, varfloat3 center, varfloat radius);
 varfloat DE_Torus(varfloat3 vec, varfloat3 center, varfloat2 t);
 varfloat DE_Box(varfloat3 vec, varfloat3 center, varfloat3 b);
 varfloat DE_Sponge(varfloat3 vec);
-varfloat DE_Mandelbulb(varfloat3 vec, int* i);
+varfloat DE_Mandelbulb(varfloat3 vec, varfloat *hue);
+varfloat3 Hue(varfloat hue);
 //varfloat DE(varfloat3 vec);
 
 varfloat DE_Sphere(varfloat3 vec, varfloat3 center, varfloat radius) { 
@@ -46,7 +49,7 @@ varfloat DE_Box(varfloat3 vec, varfloat3 center, varfloat3 b) {
 	return length(fmax(d, _0)) + fmin(fmax(d.x,fmax(d.y,d.z)),_0);
 }
 
-#define DE_Iters 50
+#define DE_Iters 10
 #define bailout 1.5
 #define power 8
 
@@ -77,7 +80,8 @@ varfloat DE_Sponge(varfloat3 vec) {
 	return (length(vec)-1.5f)*pow(3.0f, -(varfloat)DE_Iters);
 }
 
-varfloat DE_Mandelbulb(varfloat3 vec, int* iterations) {
+varfloat DE_Mandelbulb(varfloat3 vec, varfloat *hue) {
+	varfloat dist;
 	varfloat3 z = vec;
 	varfloat dr = 1.0f;
 	varfloat r = _0;
@@ -100,15 +104,37 @@ varfloat DE_Mandelbulb(varfloat3 vec, int* iterations) {
 		z = zr*(varfloat3)(sin(theta)*cos(phi), sin(phi)*sin(theta), cos(theta));
 		z += vec;
 	}
-	if(i > iterations) {
-		iterations = i;
-	}
-	return 0.5f*log(r)*r/dr;
+	dist = 0.5f*log(r)*r/dr;
+	*hue = fmod((dist - length(vec) + 1.0), 1.0)*3.0;
+	return dist;
 }
 
 /*varfloat DE(varfloat3 vec) {
 	
 }*/
+
+varfloat3 Hue(varfloat hue) { //Hue is from 0 to 1
+	hue *= 6.0f;
+	varfloat x = _1-fabs(fmod(hue, 2.0f) - _1);
+	switch((int)hue) {
+		case 0:
+			return (varfloat3)(_1, x, _0);
+			break;
+		case 1:
+			return (varfloat3)(x, _1, _0);
+			break;
+		case 2:
+			return (varfloat3)(_0, _1, x);
+			break;
+		case 3:
+			return (varfloat3)(_0, x, _1);
+			break;
+		case 4:
+			return (varfloat3)(x, _0, _1);
+			break;
+	}
+	return (varfloat3)(_1, _0, x);
+}
 
 kernel void raymarch(const int width, 
 					 const int height,
@@ -149,16 +175,16 @@ kernel void raymarch(const int width,
 	
     int rayiterations = 0;
     varfloat currentDist = 1;
-    
-	int bulbiterations = 0;
+	varfloat hue;
 	
     while(rayiterations < maxrayiterations && currentDist > collidethresh) {
-    	currentDist = DE_Mandelbulb(position, &bulbiterations);
+    	currentDist = DE_Mandelbulb(position, &hue);
 		position += direction * currentDist;
     	rayiterations++;
     }
 	
 	varfloat color = _255*(maxrayiterations-rayiterations)/maxrayiterations;
+	varfloat3 colorvec = Hue(hue)*color;
 	//varfloat color = _255*(DE_Iters-bulbiterations)/(DE_Iters);
-	write_imageui(output,  pixelcoords, (uint4)(color, color, color, 255));
+	write_imageui(output,  pixelcoords, (uint4)(colorvec.x, colorvec.y, colorvec.z, 255));
 }

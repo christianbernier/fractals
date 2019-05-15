@@ -493,7 +493,7 @@ public final class RunFractal {
 		//camera.setAngle(0, -Math.PI/2.0);
 		
 		//System.out.println(camera + " Time: " + timeDelta + " Width: " + width + " Height: " + height + " X: " + MouseInput.x + " Y: " + MouseInput.y);
-		//System.out.println("X" + camera.getLocation().getX() + " Y" + camera.getLocation().getY() + " Z" + camera.getLocation().getZ() + " P" + camera.getPitch()*180.0/Math.PI + " Y" + camera.getYaw()*180.0/Math.PI + " " + camera.getRelativeY());
+		System.out.println("X" + camera.getLocation().getX() + " Y" + camera.getLocation().getY() + " Z" + camera.getLocation().getZ() + " P" + camera.getPitch()*180.0/Math.PI + " Y" + camera.getYaw()*180.0/Math.PI + " " + camera.getRelativeY());
 	}
 	
 	public static void main(String[] args) {
