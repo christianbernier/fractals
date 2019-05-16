@@ -34,10 +34,10 @@ varfloat DE_Torus(varfloat3 vec, varfloat3 center, varfloat2 t);
 varfloat DE_Box(varfloat3 vec, varfloat3 center, varfloat3 b);
 varfloat DE_Sponge(varfloat3 vec);
 varfloat DE_Mandelbulb(varfloat3 vec);
-void sphereFold(varfloat3 *vec, varfloat *dz);
-void boxFold(varfloat3 *vec);
-varfloat DE_Mandelbox(varfloat3 vec);
 varfloat3 Hue(varfloat hue);
+void boxFold(varfloat3 *vec);
+void sphereFold(varfloat3 *vec, varfloat *dz);
+varfloat DE_Mandelbox(varfloat3 vec, varfloat t);
 //varfloat DE(varfloat3 vec);
 
 varfloat DE_Sphere(varfloat3 vec, varfloat3 center, varfloat radius) { 
@@ -137,17 +137,18 @@ void sphereFold(varfloat3 *vec, varfloat *dz) {
 #define foldingLimit 1.0f
 
 void boxFold(varfloat3 *vec) {
-	*vec = clamp(*vec, -foldingLimit, foldingLimit) * 2.0 - *vec;
+	*vec = clamp(*vec, -foldingLimit, foldingLimit) * 2.0f - *vec;
 }
 
-varfloat DE_Mandelbox(varfloat3 vec) {
+varfloat DE_Mandelbox(varfloat3 vec, varfloat t) {
+	t += 0.5;
 	varfloat3 offset = vec;
-	varfloat dr = scale;//1.0;
+	varfloat dr = t*scale;//1.0;
 	for(int n = 0; n < DE_Iters; n++) {
 		boxFold(&vec);       // Reflect
 		sphereFold(&vec, &dr);    // Sphere Inversion
- 		vec = scale*vec + offset;  // Scale & Translate
-        dr = dr*fabs(scale)+1.0;
+ 		vec = t*scale*vec + offset;  // Scale & Translate
+        dr = dr*fabs(scale*t)+1.0f;
 	}
 	return length(vec) / fabs(dr);
 }
@@ -186,7 +187,8 @@ kernel void raymarch(const int width,
 					 const varfloat px, 
 					 const varfloat py, 
 					 const varfloat pz,
-					 __constant float *m) {
+					 __constant float *m,
+					 const varfloat t) {
 	
 	int2 pixelcoords = {get_global_id(0), get_global_id(1)};
 	
@@ -221,7 +223,8 @@ kernel void raymarch(const int width,
 	varfloat hue;
 	
     while(rayiterations < maxrayiterations && currentDist > collidethresh) {
-    	currentDist = DE_Mandelbox(position);
+    	currentDist = DE_Mandelbox(position, t);
+    	//currentDist = DE_Sponge(position);
 		position += direction * currentDist;
     	rayiterations++;
     }
