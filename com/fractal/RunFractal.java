@@ -785,6 +785,7 @@ public final class RunFractal {
 
         // disable 64bit floating point math if not available
         StringBuilder options = new StringBuilder(""); //-D USE_TEXTURE
+        //options.append(" -w");
         if (doublePrecision && isDoubleFPAvailable(deviceCaps)) {
             //cl_khr_fp64
             options.append(" -D DOUBLE_FP");

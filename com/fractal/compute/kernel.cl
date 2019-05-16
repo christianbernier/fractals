@@ -7,15 +7,17 @@
         #endif
     #endif
     #define varfloat double
-    #define varfloat3 double3
 	#define varfloat2 double2
+    #define varfloat3 double3
+	#define varfloat4 double4
     #define _255 255.0
 	#define _0 0.0
 	#define _1 1.0
 #else
     #define varfloat float
-    #define varfloat3 float3
 	#define varfloat2 float2
+    #define varfloat3 float3
+	#define varfloat4 float4
     #define _255 255.0f
 	#define _0 0.0f
 	#define _1 1.0f
@@ -31,7 +33,7 @@ varfloat DE_Sphere(varfloat3 vec, varfloat3 center, varfloat radius);
 varfloat DE_Torus(varfloat3 vec, varfloat3 center, varfloat2 t);
 varfloat DE_Box(varfloat3 vec, varfloat3 center, varfloat3 b);
 varfloat DE_Sponge(varfloat3 vec);
-varfloat DE_Mandelbulb(varfloat3 vec, varfloat *hue);
+varfloat DE_Mandelbulb(varfloat3 vec);
 varfloat3 Hue(varfloat hue);
 //varfloat DE(varfloat3 vec);
 
@@ -80,7 +82,7 @@ varfloat DE_Sponge(varfloat3 vec) {
 	return (length(vec)-1.5f)*pow(3.0f, -(varfloat)DE_Iters);
 }
 
-varfloat DE_Mandelbulb(varfloat3 vec, varfloat *hue) {
+varfloat DE_Mandelbulb(varfloat3 vec) {
 	varfloat dist;
 	varfloat3 z = vec;
 	varfloat dr = 1.0f;
@@ -105,8 +107,46 @@ varfloat DE_Mandelbulb(varfloat3 vec, varfloat *hue) {
 		z += vec;
 	}
 	dist = 0.5f*log(r)*r/dr;
-	*hue = fmod((dist - length(vec) + 1.0), 1.0)*3.0;
 	return dist;
+}
+
+#define scale 2.5
+#define fixedRadius 1.0
+#define fixedRadius2 1.0
+#define minRadius 0.5
+#define minRadius2 0.25
+
+void sphereFold(varfloat3 *vec, varfloat *dz) {
+	varfloat r2 = dot(*vec, *vec); //x*x + y*y + z*z
+	if (r2<minRadius2) { 
+		// linear inner scaling
+		varfloat temp = fixedRadius2 / minRadius2;
+		*vec *= temp;
+		*dz *= temp;
+	} else if (r2<fixedRadius2) { 
+		// this is the actual sphere inversion
+		varfloat temp = fixedRadius2 / r2;
+		*vec *= temp;
+		*dz *= temp;
+	}
+}
+
+#define foldingLimit 1.0
+
+void boxFold(varfloat3 *vec) {
+	*vec = clamp(*vec, -foldingLimit, foldingLimit) * 2.0 - *vec;
+}
+
+varfloat DE_Mandelbox(varfloat3 vec) {
+	varfloat3 offset = vec;
+	varfloat dr = scale;//1.0;
+	for(int n = 0; n < DE_Iters; n++) {
+		boxFold(&vec);       // Reflect
+		sphereFold(&vec, &dr);    // Sphere Inversion
+ 		vec = scale*vec + offset;  // Scale & Translate
+        dr = dr*fabs(scale)+1.0;
+	}
+	return length(vec) / fabs(dr);
 }
 
 /*varfloat DE(varfloat3 vec) {
@@ -178,13 +218,13 @@ kernel void raymarch(const int width,
 	varfloat hue;
 	
     while(rayiterations < maxrayiterations && currentDist > collidethresh) {
-    	currentDist = DE_Mandelbulb(position, &hue);
+    	currentDist = DE_Mandelbox(position);
 		position += direction * currentDist;
     	rayiterations++;
     }
 	
 	varfloat color = _255*(maxrayiterations-rayiterations)/maxrayiterations;
-	varfloat3 colorvec = Hue(hue)*color;
+	varfloat3 colorvec = Hue(fmod(length(position), 1.0))*color;
 	//varfloat color = _255*(DE_Iters-bulbiterations)/(DE_Iters);
 	write_imageui(output,  pixelcoords, (uint4)(colorvec.x, colorvec.y, colorvec.z, 255));
 }
