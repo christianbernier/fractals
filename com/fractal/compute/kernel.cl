@@ -34,6 +34,9 @@ varfloat DE_Torus(varfloat3 vec, varfloat3 center, varfloat2 t);
 varfloat DE_Box(varfloat3 vec, varfloat3 center, varfloat3 b);
 varfloat DE_Sponge(varfloat3 vec);
 varfloat DE_Mandelbulb(varfloat3 vec);
+void sphereFold(varfloat3 *vec, varfloat *dz);
+void boxFold(varfloat3 *vec);
+varfloat DE_Mandelbox(varfloat3 vec);
 varfloat3 Hue(varfloat hue);
 //varfloat DE(varfloat3 vec);
 
@@ -51,9 +54,9 @@ varfloat DE_Box(varfloat3 vec, varfloat3 center, varfloat3 b) {
 	return length(fmax(d, _0)) + fmin(fmax(d.x,fmax(d.y,d.z)),_0);
 }
 
-#define DE_Iters 10
-#define bailout 1.5
-#define power 8
+#define DE_Iters 10.0f
+#define bailout 1.5f
+#define power 8.0f
 
 varfloat DE_Sponge(varfloat3 vec) {
 	varfloat t;
@@ -110,11 +113,11 @@ varfloat DE_Mandelbulb(varfloat3 vec) {
 	return dist;
 }
 
-#define scale 2.5
-#define fixedRadius 1.0
-#define fixedRadius2 1.0
-#define minRadius 0.5
-#define minRadius2 0.25
+#define scale 2.5f
+#define fixedRadius 1.0f
+#define fixedRadius2 1.0f
+#define minRadius 0.5f
+#define minRadius2 0.25f
 
 void sphereFold(varfloat3 *vec, varfloat *dz) {
 	varfloat r2 = dot(*vec, *vec); //x*x + y*y + z*z
@@ -131,7 +134,7 @@ void sphereFold(varfloat3 *vec, varfloat *dz) {
 	}
 }
 
-#define foldingLimit 1.0
+#define foldingLimit 1.0f
 
 void boxFold(varfloat3 *vec) {
 	*vec = clamp(*vec, -foldingLimit, foldingLimit) * 2.0 - *vec;
