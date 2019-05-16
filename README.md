@@ -45,9 +45,6 @@ A project for AP CS, where we render 3D fractals using distance estimators and r
   <li>All distortion eliminated</li>
   <li>First Fractals! Here is a Mandelbulb rendering that we are quite proud of:
   ![img](https://raw.githubusercontent.com/christianbernier/fractals/master/sample3.png)</li>
-  <li>Scaling for the Madelbox changes based on the frame count</li>
-  <li>Mandelbox Demo (video):
-  [![mandelbox](http://img.youtube.com/vi/NFMgaJgmAYk/0.jpg)](http://www.youtube.com/watch?v=NFMgaJgmAYk "Mandelbox Demo")
-  </li>
+  
 </ul>
 
