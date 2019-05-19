@@ -44,7 +44,19 @@ A project for AP CS, where we render 3D fractals using distance estimators and r
 <ul>
   <li>All distortion eliminated</li>
   <li>First Fractals! Here is a Mandelbulb rendering that we are quite proud of:
+    
   ![img](https://raw.githubusercontent.com/christianbernier/fractals/master/sample3.png)</li>
-  
+  <li>Work is being done on coloring fractals, making them more detailed and some preliminary GUI stuff</li>
 </ul>
 
+## Week 6 Update (5/18)
+<ul>
+  <li>Added a time variable that increments frame by frame, allowing fractals to be animated: 
+   
+  ![img](https://raw.githubusercontent.com/christianbernier/fractals/master/sample.gif)</li>
+  <li>Added mandelbox fractal:
+  
+  ![img](https://raw.githubusercontent.com/christianbernier/fractals/master/sample4.png)</li>
+  <li>Fractals are colored based on distance from the origin, more sophisticated coloring that emphasizes the structure of the fractal to be added later. </li>
+  <li>More control over the renderer: +/- adjusts the number of iterations for the fractal and shift +/- adjusts the number of iterations per ray. p also plays/pauses the animation.</li>
+</ul>
