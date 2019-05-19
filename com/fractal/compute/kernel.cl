@@ -38,6 +38,7 @@ varfloat DE_Mandelbulb(varfloat3 vec, int DE_Iters);
 void sphereFold(varfloat3 *vec, varfloat *dz);
 void boxFold(varfloat3 *vec);
 varfloat DE_Mandelbox(varfloat3 vec, int DE_Iters);
+varfloat DE_Mandelbox_T(varfloat3 vec, int DE_Iters, varfloat t);
 varfloat3 Hue(varfloat hue);
 //varfloat DE(varfloat3 vec);
 
@@ -137,7 +138,7 @@ void sphereFold(varfloat3 *vec, varfloat *dz) {
 #define foldingLimit 1.0f
 
 void boxFold(varfloat3 *vec) {
-	*vec = clamp(*vec, -foldingLimit, foldingLimit) * 2.0 - *vec;
+	*vec = clamp(*vec, -foldingLimit, foldingLimit) * 2.0f - *vec;
 }
 
 varfloat DE_Mandelbox(varfloat3 vec, int DE_Iters) {
@@ -148,6 +149,20 @@ varfloat DE_Mandelbox(varfloat3 vec, int DE_Iters) {
 		sphereFold(&vec, &dr);    // Sphere Inversion
  		vec = scale*vec + offset;  // Scale & Translate
         dr = dr*fabs(scale)+ _1;
+    }
+	return length(vec) / fabs(dr);
+}
+
+varfloat DE_Mandelbox_t(varfloat3 vec, int DE_Iters, varfloat t) {
+	t += 0.5;
+	t *= scale;
+	varfloat3 offset = vec;
+	varfloat dr = t;//1.0;
+	for(int n = 0; n < DE_Iters; n++) {
+		boxFold(&vec);       // Reflect
+		sphereFold(&vec, &dr);    // Sphere Inversion
+ 		vec = t*vec + offset;  // Scale & Translate
+        dr = dr*fabs(t)+1.0f;
 	}
 	return length(vec) / fabs(dr);
 }
@@ -187,8 +202,9 @@ kernel void raymarch(const int width,
 					 const varfloat pz,
 					 __constant float *m,
 					 const int maxrayiterations,
-					 const int DE_Iters) {
-	
+					 const int DE_Iters,
+					 const varfloat t) {
+
 	int2 pixelcoords = {get_global_id(0), get_global_id(1)};
 	
 	//varfloat y = yaw - fov/2.0 + fov*ix/width;
@@ -222,7 +238,7 @@ kernel void raymarch(const int width,
 	varfloat hue;
 	
     while(rayiterations < maxrayiterations && currentDist > collidethresh) {
-    	currentDist = DE_Mandelbox(position, DE_Iters);
+    	currentDist = DE_Mandelbox_t(position, DE_Iters, t);
 		position += direction * currentDist;
     	rayiterations++;
     }

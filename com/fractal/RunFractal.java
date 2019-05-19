@@ -91,6 +91,9 @@ public final class RunFractal {
     private static long clKernel;
     private static long clTexture;
     private static long matrixhandle;
+    
+    private static double frameNumber = 0;
+    private static final double frameLimit = 1000;
 
     private static final PointerBuffer kernel2DGlobalWorkSize = BufferUtils.createPointerBuffer(2);
 
@@ -517,6 +520,8 @@ public final class RunFractal {
 		//camera.setAngle(0, -Math.PI/2.0);
 		
 		//System.out.println(camera + " Time: " + timeDelta + " Width: " + width + " Height: " + height + " X: " + MouseInput.x + " Y: " + MouseInput.y);
+//		System.out.println("X" + camera.getLocation().getX() + " Y" + camera.getLocation().getY() + " Z" + camera.getLocation().getZ() + " P" + camera.getPitch()*180.0/Math.PI + " Y" + camera.getYaw()*180.0/Math.PI + " " + camera.getRelativeY());
+		System.out.println("fn: " + frameNumber);
 	}
 	
 	public static void main(String[] args) {
@@ -552,6 +557,10 @@ public final class RunFractal {
 			
 			if(timeDelta <= 0) {
 				timeDelta = 1;
+			}
+			frameNumber++;
+			if(frameNumber >= frameLimit) {
+				frameNumber = 1;
 			}
 		}
 		
@@ -730,10 +739,12 @@ public final class RunFractal {
             clSetKernelArg1f(clKernel, 3, (float)camera.getLocation().getX());
             clSetKernelArg1f(clKernel, 4, (float)camera.getLocation().getY());
             clSetKernelArg1f(clKernel, 5, (float)camera.getLocation().getZ());
+            clSetKernelArg1f(clKernel, 9, (float) (frameNumber/frameLimit));
         } else {	
             clSetKernelArg1d(clKernel, 3, camera.getLocation().getX());	
             clSetKernelArg1d(clKernel, 4, camera.getLocation().getY());
             clSetKernelArg1d(clKernel, 5, camera.getLocation().getZ());
+            clSetKernelArg1d(clKernel, 9, frameNumber/frameLimit);
         }
 
         // acquire GL objects, and enqueue a kernel with a probe from the list

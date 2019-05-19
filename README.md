@@ -44,7 +44,7 @@ A project for AP CS, where we render 3D fractals using distance estimators and r
 <ul>
   <li>All distortion eliminated</li>
   <li>First Fractals! Here is a Mandelbulb rendering that we are quite proud of:
-    
   ![img](https://raw.githubusercontent.com/christianbernier/fractals/master/sample3.png)</li>
+  
 </ul>
 
