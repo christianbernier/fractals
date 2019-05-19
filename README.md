@@ -24,7 +24,7 @@ A project for AP CS, where we render 3D fractals using distance estimators and r
   <li>Some OpenGL implementation drawing simple 2d shapes, but still has bugs and doesn't work</li>
   <li>The kernel now properly shades the rendered images based on the number of iterations required per pixel. Here is a sample image of a torus and a sphere:
     
-  ![img](https://raw.githubusercontent.com/christianbernier/fractals/master/sample.png)</li>
+  ![img](sample.png)</li>
   <li>Mouse input issue fixed - the screen no longer shakes incessantly</li>
 </ul>
 
@@ -33,7 +33,7 @@ A project for AP CS, where we render 3D fractals using distance estimators and r
   <li>Not much work was done this week because of preparation for AP tests</li>
   <li>Folding space was tested and worked successfully. Here is a sample image of a world filled with infinite toruses:
     
-  ![img](https://raw.githubusercontent.com/christianbernier/fractals/master/sample2.png)</li>
+  ![img](sample2.png)</li>
   <li>Minor optimisations such as the vertex and fragment shader sources being moved to separate files</li>
   <li>Window can be resized, and automatically recompiles the kernel with the new resolution (only works on windows for some reason)</li>
   <li>The mouse can be released by pressing ESC and recaptured by clicking anywhere in the window</li>
@@ -45,7 +45,7 @@ A project for AP CS, where we render 3D fractals using distance estimators and r
   <li>All distortion eliminated</li>
   <li>First Fractals! Here is a Mandelbulb rendering that we are quite proud of:
     
-  ![img](https://raw.githubusercontent.com/christianbernier/fractals/master/sample3.png)</li>
+  ![img](sample3.png)</li>
   <li>Work is being done on coloring fractals, making them more detailed and some preliminary GUI stuff</li>
 </ul>
 
@@ -53,10 +53,10 @@ A project for AP CS, where we render 3D fractals using distance estimators and r
 <ul>
   <li>Added a time variable that increments frame by frame, allowing fractals to be animated: 
    
-  ![img](https://raw.githubusercontent.com/christianbernier/fractals/master/sample.gif)</li>
+  ![img](sample.gif)</li>
   <li>Added mandelbox fractal:
   
-  ![img](https://raw.githubusercontent.com/christianbernier/fractals/master/sample4.png)</li>
+  ![img](sample4.png)</li>
   <li>Fractals are colored based on distance from the origin, more sophisticated coloring that emphasizes the structure of the fractal to be added later. </li>
   <li>More control over the renderer: +/- adjusts the number of iterations for the fractal and shift +/- adjusts the number of iterations per ray. p also plays/pauses the animation.</li>
 </ul>
