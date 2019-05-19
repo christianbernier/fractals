@@ -13,6 +13,8 @@
     #define _255 255.0
 	#define _0 0.0
 	#define _1 1.0
+	#define fov 1.0471975512 //PI/3
+	#define collidethresh 0.000001
 #else
     #define varfloat float
 	#define varfloat2 float2
@@ -21,10 +23,9 @@
     #define _255 255.0f
 	#define _0 0.0f
 	#define _1 1.0f
+	#define fov 1.0471975512f //PI/3 
+	#define collidethresh 0.000001f
 #endif
-
-#define collidethresh 0.001
-#define maxrayiterations 200
 
 //DISTANCE ESTIMATORS https://iquilezles.org/www/articles/distfunctions/distfunctions.htm
 //OPENCL SPECIFICATION https://www.khronos.org/registry/OpenCL/specs/opencl-2.1.pdf
@@ -32,11 +33,11 @@
 varfloat DE_Sphere(varfloat3 vec, varfloat3 center, varfloat radius);
 varfloat DE_Torus(varfloat3 vec, varfloat3 center, varfloat2 t);
 varfloat DE_Box(varfloat3 vec, varfloat3 center, varfloat3 b);
-varfloat DE_Sponge(varfloat3 vec);
-varfloat DE_Mandelbulb(varfloat3 vec);
+varfloat DE_Sponge(varfloat3 vec, int DE_Iters);
+varfloat DE_Mandelbulb(varfloat3 vec, int DE_Iters);
 void sphereFold(varfloat3 *vec, varfloat *dz);
 void boxFold(varfloat3 *vec);
-varfloat DE_Mandelbox(varfloat3 vec);
+varfloat DE_Mandelbox(varfloat3 vec, int DE_Iters);
 varfloat3 Hue(varfloat hue);
 //varfloat DE(varfloat3 vec);
 
@@ -54,11 +55,10 @@ varfloat DE_Box(varfloat3 vec, varfloat3 center, varfloat3 b) {
 	return length(fmax(d, _0)) + fmin(fmax(d.x,fmax(d.y,d.z)),_0);
 }
 
-#define DE_Iters 10.0f
 #define bailout 1.5f
 #define power 8.0f
 
-varfloat DE_Sponge(varfloat3 vec) {
+varfloat DE_Sponge(varfloat3 vec, int DE_Iters) {
 	varfloat t;
 	for(int n = 0; n < DE_Iters; n++){
 		vec = fabs(vec);
@@ -85,7 +85,7 @@ varfloat DE_Sponge(varfloat3 vec) {
 	return (length(vec)-1.5f)*pow(3.0f, -(varfloat)DE_Iters);
 }
 
-varfloat DE_Mandelbulb(varfloat3 vec) {
+varfloat DE_Mandelbulb(varfloat3 vec, int DE_Iters) {
 	varfloat dist;
 	varfloat3 z = vec;
 	varfloat dr = 1.0f;
@@ -113,7 +113,7 @@ varfloat DE_Mandelbulb(varfloat3 vec) {
 	return dist;
 }
 
-#define scale 2.5f
+#define scale -1.5f
 #define fixedRadius 1.0f
 #define fixedRadius2 1.0f
 #define minRadius 0.5f
@@ -140,14 +140,14 @@ void boxFold(varfloat3 *vec) {
 	*vec = clamp(*vec, -foldingLimit, foldingLimit) * 2.0 - *vec;
 }
 
-varfloat DE_Mandelbox(varfloat3 vec) {
+varfloat DE_Mandelbox(varfloat3 vec, int DE_Iters) {
 	varfloat3 offset = vec;
-	varfloat dr = scale;//1.0;
+	varfloat dr = _1;
 	for(int n = 0; n < DE_Iters; n++) {
 		boxFold(&vec);       // Reflect
 		sphereFold(&vec, &dr);    // Sphere Inversion
  		vec = scale*vec + offset;  // Scale & Translate
-        dr = dr*fabs(scale)+1.0;
+        dr = dr*fabs(scale)+ _1;
 	}
 	return length(vec) / fabs(dr);
 }
@@ -182,11 +182,12 @@ varfloat3 Hue(varfloat hue) { //Hue is from 0 to 1
 kernel void raymarch(const int width, 
 					 const int height,
 					 __write_only image2d_t output,
-					 const varfloat fov, 
 					 const varfloat px, 
 					 const varfloat py, 
 					 const varfloat pz,
-					 __constant float *m) {
+					 __constant float *m,
+					 const int maxrayiterations,
+					 const int DE_Iters) {
 	
 	int2 pixelcoords = {get_global_id(0), get_global_id(1)};
 	
@@ -221,7 +222,7 @@ kernel void raymarch(const int width,
 	varfloat hue;
 	
     while(rayiterations < maxrayiterations && currentDist > collidethresh) {
-    	currentDist = DE_Mandelbox(position);
+    	currentDist = DE_Mandelbox(position, DE_Iters);
 		position += direction * currentDist;
     	rayiterations++;
     }

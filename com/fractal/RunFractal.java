@@ -131,9 +131,10 @@ public final class RunFractal {
 	public static GLFWWindow window;
 	public static int width = 640;
 	public static int height = 480;
-	public static double fov = Math.PI/3;
+	private static int maxrayiterations = 100;
+	private static int maxDEiterations = 20;
 	private static final double MOUSECOEFFICIENT = 200;
-	private static final double KEYBOARDCOEFFICIENT = 0.002;
+	private static final double KEYBOARDCOEFFICIENT = 0.00002;
 	private static final Set<String> params = new HashSet<>(8);
 	
 	private static final GLFWKeyCallback keyCallback = new KeyboardInput();
@@ -141,7 +142,7 @@ public final class RunFractal {
 	private static final GLFWWindowSizeCallback sizeCallback = new SizeInput();
 	//private static DoubleBuffer guiAxesCoords = BufferUtils.createDoubleBuffer(6);
 	
-	private static Camera camera = new Camera();
+	private static Camera camera = new Camera(new Vector3D(0, 0, 0));
 	private static FloatBuffer cameraMatrix = BufferUtils.createFloatBuffer(9);
 	
 	//private static PixelObject pixels;
@@ -454,14 +455,37 @@ public final class RunFractal {
 			//System.out.println("Move Camera Up");
 			camera.moveRelativeZ(m);
 		} 
-		if (KeyboardInput.isKeyDown(GLFW_KEY_ESCAPE)) {
+		if(KeyboardInput.isKeyDown(GLFW_KEY_ESCAPE)) {
 			glfwSetInputMode(window.handle, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 		}
-		if (KeyboardInput.isKeyDown(GLFW_KEY_P)) {
+		if(KeyboardInput.isKeyDown(GLFW_KEY_P)) {
             doublePrecision = !doublePrecision;
             log("DOUBLE PRECISION IS NOW: " + (doublePrecision ? "ON" : "OFF"));
             rebuild = true;
 		}
+		if(KeyboardInput.isKeyDown(GLFW_KEY_RIGHT_SHIFT)) {
+			if(KeyboardInput.isKeyDown(GLFW_KEY_EQUAL)) {
+				maxrayiterations++;
+				System.out.println("Max Ray Iterations: " + maxrayiterations);
+			}
+			if(KeyboardInput.isKeyDown(GLFW_KEY_MINUS) && maxrayiterations > 0) {
+				maxrayiterations--;
+				System.out.println("Max Ray Iterations: " + maxrayiterations);
+			}
+		} else {
+			if(KeyboardInput.isKeyDown(GLFW_KEY_EQUAL)) {
+				maxDEiterations++;
+				System.out.println("Max Fractal Iterations: " + maxDEiterations);
+			}
+			if(KeyboardInput.isKeyDown(GLFW_KEY_MINUS) && maxDEiterations > 0) {
+				maxDEiterations--;
+				System.out.println("Max Fractal Iterations: " + maxDEiterations);
+			}
+		}
+		if(KeyboardInput.isKeyDown(GLFW_KEY_C)) {
+			System.out.println("X" + camera.getLocation().getX() + " Y" + camera.getLocation().getY() + " Z" + camera.getLocation().getZ() + " P" + camera.getPitch()*180.0/Math.PI + " Y" + camera.getYaw()*180.0/Math.PI + " " + camera.getRelativeY());
+		}
+		
 		
 		if(glfwGetMouseButton(window.handle, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
 			glfwSetInputMode(window.handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -493,7 +517,6 @@ public final class RunFractal {
 		//camera.setAngle(0, -Math.PI/2.0);
 		
 		//System.out.println(camera + " Time: " + timeDelta + " Width: " + width + " Height: " + height + " X: " + MouseInput.x + " Y: " + MouseInput.y);
-		System.out.println("X" + camera.getLocation().getX() + " Y" + camera.getLocation().getY() + " Z" + camera.getLocation().getZ() + " P" + camera.getPitch()*180.0/Math.PI + " Y" + camera.getYaw()*180.0/Math.PI + " " + camera.getRelativeY());
 	}
 	
 	public static void main(String[] args) {
@@ -701,16 +724,16 @@ public final class RunFractal {
         clEnqueueWriteBuffer(clQueue, matrixhandle, true, 0, cameraMatrix, null, null);
         clSetKernelArg1i(clKernel, 0, width);
         clSetKernelArg1i(clKernel, 1, height);
+        clSetKernelArg1i(clKernel, 7, maxrayiterations);
+        clSetKernelArg1i(clKernel, 8, maxDEiterations);
         if (!is64bit || !isDoubleFPAvailable(deviceCaps)) {
-            clSetKernelArg1f(clKernel, 3, (float)fov);   
-            clSetKernelArg1f(clKernel, 4, (float)camera.getLocation().getX());
-            clSetKernelArg1f(clKernel, 5, (float)camera.getLocation().getY());
-            clSetKernelArg1f(clKernel, 6, (float)camera.getLocation().getZ());
-        } else {
-        	clSetKernelArg1d(clKernel, 3, fov);   	
-            clSetKernelArg1d(clKernel, 4, camera.getLocation().getX());	
-            clSetKernelArg1d(clKernel, 5, camera.getLocation().getY());
-            clSetKernelArg1d(clKernel, 6, camera.getLocation().getZ());
+            clSetKernelArg1f(clKernel, 3, (float)camera.getLocation().getX());
+            clSetKernelArg1f(clKernel, 4, (float)camera.getLocation().getY());
+            clSetKernelArg1f(clKernel, 5, (float)camera.getLocation().getZ());
+        } else {	
+            clSetKernelArg1d(clKernel, 3, camera.getLocation().getX());	
+            clSetKernelArg1d(clKernel, 4, camera.getLocation().getY());
+            clSetKernelArg1d(clKernel, 5, camera.getLocation().getZ());
         }
 
         // acquire GL objects, and enqueue a kernel with a probe from the list
@@ -885,7 +908,7 @@ public final class RunFractal {
 
     private static void setKernelConstants() {
     	clSetKernelArg1p(clKernel, 2, clTexture);
-    	clSetKernelArg1p(clKernel, 7, matrixhandle);
+    	clSetKernelArg1p(clKernel, 6, matrixhandle);
     }
     
     private static void parseArgs(String... args) {
