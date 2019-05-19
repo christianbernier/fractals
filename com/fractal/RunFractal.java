@@ -11,7 +11,7 @@ import java.nio.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.*;
-import java.awt.Font;
+//import java.awt.Font;
 
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
@@ -30,7 +30,7 @@ import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
 import com.fractal.graphics.input.*;
-import com.fractal.graphics.fractalEngine.PixelObject;
+//import com.fractal.graphics.fractalEngine.PixelObject;
 import static com.fractal.compute.utils.IOUtil.*;
 import static com.fractal.compute.utils.InfoUtil.*;
 import com.fractal.compute.*;
@@ -92,7 +92,7 @@ public final class RunFractal {
     private static long clTexture;
     private static long matrixhandle;
     
-    private static double frameNumber = 0;
+    private static double frameNumber = 1;
     private static final double frameLimit = 1000;
 
     private static final PointerBuffer kernel2DGlobalWorkSize = BufferUtils.createPointerBuffer(2);
@@ -114,9 +114,7 @@ public final class RunFractal {
 
     // VIEWPORT
 
-    private static int
-        fbw,
-        fbh;
+    private static int fbw, fbh;
 
     // EVENT SYNCING
 
@@ -131,6 +129,7 @@ public final class RunFractal {
     private static boolean shouldInitBuffers = true;
     private static boolean rebuild;
 	public static boolean running = false;
+	public static boolean play = false;
 	public static GLFWWindow window;
 	public static int width = 640;
 	public static int height = 480;
@@ -145,7 +144,7 @@ public final class RunFractal {
 	private static final GLFWWindowSizeCallback sizeCallback = new SizeInput();
 	//private static DoubleBuffer guiAxesCoords = BufferUtils.createDoubleBuffer(6);
 	
-	private static Camera camera = new Camera(new Vector3D(0, 0, 0));
+	private static Camera camera = new Camera(new Vector3D(0, -2.5, 0));
 	private static FloatBuffer cameraMatrix = BufferUtils.createFloatBuffer(9);
 	
 	//private static PixelObject pixels;
@@ -488,6 +487,13 @@ public final class RunFractal {
 		if(KeyboardInput.isKeyDown(GLFW_KEY_C)) {
 			System.out.println("X" + camera.getLocation().getX() + " Y" + camera.getLocation().getY() + " Z" + camera.getLocation().getZ() + " P" + camera.getPitch()*180.0/Math.PI + " Y" + camera.getYaw()*180.0/Math.PI + " " + camera.getRelativeY());
 		}
+		if(KeyboardInput.isKeyDown(GLFW_KEY_P)) {
+			play = !play;
+		}
+		
+		if(play) {
+			System.out.println("Frame Number: " + frameNumber);
+		}
 		
 		
 		if(glfwGetMouseButton(window.handle, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
@@ -521,7 +527,6 @@ public final class RunFractal {
 		
 		//System.out.println(camera + " Time: " + timeDelta + " Width: " + width + " Height: " + height + " X: " + MouseInput.x + " Y: " + MouseInput.y);
 //		System.out.println("X" + camera.getLocation().getX() + " Y" + camera.getLocation().getY() + " Z" + camera.getLocation().getZ() + " P" + camera.getPitch()*180.0/Math.PI + " Y" + camera.getYaw()*180.0/Math.PI + " " + camera.getRelativeY());
-		System.out.println("fn: " + frameNumber);
 	}
 	
 	public static void main(String[] args) {
@@ -558,9 +563,12 @@ public final class RunFractal {
 			if(timeDelta <= 0) {
 				timeDelta = 1;
 			}
-			frameNumber++;
-			if(frameNumber >= frameLimit) {
-				frameNumber = 1;
+			
+			if(play) {
+				frameNumber++;
+				if(frameNumber >= frameLimit) {
+					frameNumber = 1;
+				}
 			}
 		}
 		

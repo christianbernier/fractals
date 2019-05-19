@@ -14,7 +14,7 @@
 	#define _0 0.0
 	#define _1 1.0
 	#define fov 1.0471975512 //PI/3
-	#define collidethresh 0.000001
+	#define collidethresh 0.0001
 #else
     #define varfloat float
 	#define varfloat2 float2
@@ -35,10 +35,11 @@ varfloat DE_Torus(varfloat3 vec, varfloat3 center, varfloat2 t);
 varfloat DE_Box(varfloat3 vec, varfloat3 center, varfloat3 b);
 varfloat DE_Sponge(varfloat3 vec, int DE_Iters);
 varfloat DE_Mandelbulb(varfloat3 vec, int DE_Iters);
+varfloat DE_Mandelbulb_t(varfloat3 vec, int DE_Iters, varfloat t);
 void sphereFold(varfloat3 *vec, varfloat *dz);
 void boxFold(varfloat3 *vec);
 varfloat DE_Mandelbox(varfloat3 vec, int DE_Iters);
-varfloat DE_Mandelbox_T(varfloat3 vec, int DE_Iters, varfloat t);
+varfloat DE_Mandelbox_t(varfloat3 vec, int DE_Iters, varfloat t);
 varfloat3 Hue(varfloat hue);
 //varfloat DE(varfloat3 vec);
 
@@ -57,7 +58,7 @@ varfloat DE_Box(varfloat3 vec, varfloat3 center, varfloat3 b) {
 }
 
 #define bailout 1.5f
-#define power 8.0f
+#define power 12.0f
 
 varfloat DE_Sponge(varfloat3 vec, int DE_Iters) {
 	varfloat t;
@@ -105,6 +106,35 @@ varfloat DE_Mandelbulb(varfloat3 vec, int DE_Iters) {
 		varfloat zr = pow(r,power);
 		theta = theta*power;
 		phi = phi*power;
+		
+		// convert back to cartesian coordinates
+		z = zr*(varfloat3)(sin(theta)*cos(phi), sin(phi)*sin(theta), cos(theta));
+		z += vec;
+	}
+	dist = 0.5f*log(r)*r/dr;
+	return dist;
+}
+
+varfloat DE_Mandelbulb_t(varfloat3 vec, int DE_Iters, varfloat t) {
+	varfloat dist;
+	varfloat3 z = vec;
+	varfloat dr = 1.0f;
+	varfloat r = _0;
+	t *= power;
+	int i;
+	for (i = 0; i < DE_Iters; i++) {
+		r = length(z);
+		if (r > bailout) break;
+		
+		// convert to polar coordinates
+		varfloat theta = acos(z.z/r);
+		varfloat phi = atan(z.y/z.x);
+		dr =  pow(r, t-1.0f)*t*dr + 1.0f;
+		
+		// scale and rotate the point
+		varfloat zr = pow(r,t);
+		theta = theta*t;
+		phi = phi*t;
 		
 		// convert back to cartesian coordinates
 		z = zr*(varfloat3)(sin(theta)*cos(phi), sin(phi)*sin(theta), cos(theta));
@@ -238,7 +268,7 @@ kernel void raymarch(const int width,
 	varfloat hue;
 	
     while(rayiterations < maxrayiterations && currentDist > collidethresh) {
-    	currentDist = DE_Mandelbox_t(position, DE_Iters, t);
+    	currentDist = DE_Mandelbulb_t(position, DE_Iters, t);
 		position += direction * currentDist;
     	rayiterations++;
     }
