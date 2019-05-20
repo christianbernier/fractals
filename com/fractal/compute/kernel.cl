@@ -268,7 +268,7 @@ kernel void raymarch(const int width,
 	varfloat hue;
 	
     while(rayiterations < maxrayiterations && currentDist > collidethresh) {
-    	currentDist = DE_Mandelbulb_t(position, DE_Iters, t);
+    	currentDist = DE_Mandelbox(position, DE_Iters);
 		position += direction * currentDist;
     	rayiterations++;
     }

@@ -82,7 +82,7 @@ public final class RunFractal {
 
     private static CLContextCallback clContextCB;
     
-    private static Callback debugProc;
+    private static Callback debugProc; //warning says unused but it actually is used
 
     private static long clContext;
     //private final long clColorMap;
@@ -135,8 +135,8 @@ public final class RunFractal {
 	public static int height = 480;
 	private static int maxrayiterations = 100;
 	private static int maxDEiterations = 20;
-	private static final double MOUSECOEFFICIENT = 200;
-	private static final double KEYBOARDCOEFFICIENT = 0.00002;
+	private static double MOUSECOEFFICIENT = 200;
+	private static double KEYBOARDCOEFFICIENT = 0.0002;
 	private static final Set<String> params = new HashSet<>(8);
 	
 	private static final GLFWKeyCallback keyCallback = new KeyboardInput();
@@ -460,7 +460,7 @@ public final class RunFractal {
 		if(KeyboardInput.isKeyDown(GLFW_KEY_ESCAPE)) {
 			glfwSetInputMode(window.handle, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 		}
-		if(KeyboardInput.isKeyDown(GLFW_KEY_P)) {
+		if(KeyboardInput.isKeyDown(GLFW_KEY_PERIOD)) {
             doublePrecision = !doublePrecision;
             log("DOUBLE PRECISION IS NOW: " + (doublePrecision ? "ON" : "OFF"));
             rebuild = true;
@@ -473,6 +473,15 @@ public final class RunFractal {
 			if(KeyboardInput.isKeyDown(GLFW_KEY_MINUS) && maxrayiterations > 0) {
 				maxrayiterations--;
 				System.out.println("Max Ray Iterations: " + maxrayiterations);
+			}
+		} else if(KeyboardInput.isKeyDown(GLFW_KEY_RIGHT_CONTROL)) {
+			if(KeyboardInput.isKeyDown(GLFW_KEY_EQUAL)) {
+				KEYBOARDCOEFFICIENT *= 2.0;
+				System.out.println("Movement Speed: " + KEYBOARDCOEFFICIENT);
+			}
+			if(KeyboardInput.isKeyDown(GLFW_KEY_MINUS) && maxrayiterations > 0) {
+				KEYBOARDCOEFFICIENT /= 2.0;
+				System.out.println("MOVEMENT SPEED: " + KEYBOARDCOEFFICIENT);
 			}
 		} else {
 			if(KeyboardInput.isKeyDown(GLFW_KEY_EQUAL)) {
@@ -508,7 +517,7 @@ public final class RunFractal {
 	        fbw = size.get(0);
 	        fbh = size.get(1);
 	        shouldInitBuffers = true;
-			rebuild = true;
+			//rebuild = true;
 		}
 		
 		if(glfwGetInputMode(window.handle, GLFW_CURSOR) == GLFW_CURSOR_DISABLED) {
@@ -616,12 +625,12 @@ public final class RunFractal {
         /** Used to signal that the rendering thread has completed. */
         public final CountDownLatch signal;
 
-        GLFWWindowSizeCallback      windowsizefun;
-        GLFWFramebufferSizeCallback framebuffersizefun;
-        GLFWKeyCallback             keyfun;
-        GLFWMouseButtonCallback     mousebuttonfun;
-        GLFWCursorPosCallback       cursorposfun;
-        GLFWScrollCallback          scrollfun;
+        //GLFWWindowSizeCallback      windowsizefun;
+        //GLFWFramebufferSizeCallback framebuffersizefun;
+        //GLFWKeyCallback             keyfun;
+        //GLFWMouseButtonCallback     mousebuttonfun;
+        //GLFWCursorPosCallback       cursorposfun;
+        //GLFWScrollCallback          scrollfun;
 
         private GLFWWindow(long handle, String ID, CountDownLatch signal) {
             this.handle = handle;
