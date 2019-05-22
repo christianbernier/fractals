@@ -93,7 +93,7 @@ public final class RunFractal {
     private static long matrixhandle;
     
     private static double frameNumber = 1;
-    private static final double frameLimit = 1000;
+    private static final double frameLimit = 200;
 
     private static final PointerBuffer kernel2DGlobalWorkSize = BufferUtils.createPointerBuffer(2);
 
@@ -134,9 +134,10 @@ public final class RunFractal {
 	public static int width = 640;
 	public static int height = 480;
 	private static int maxrayiterations = 100;
-	private static int maxDEiterations = 20;
+	private static int maxDEiterations = 7;
 	private static double MOUSECOEFFICIENT = 200;
 	private static double KEYBOARDCOEFFICIENT = 0.0002;
+	private static int antialias = 1;
 	private static final Set<String> params = new HashSet<>(8);
 	
 	private static final GLFWKeyCallback keyCallback = new KeyboardInput();
@@ -483,6 +484,17 @@ public final class RunFractal {
 				KEYBOARDCOEFFICIENT /= 2.0;
 				System.out.println("MOVEMENT SPEED: " + KEYBOARDCOEFFICIENT);
 			}
+		} else if(KeyboardInput.isKeyDown(GLFW_KEY_RIGHT_ALT)) {
+			if(KeyboardInput.isKeyDown(GLFW_KEY_EQUAL)) {
+				antialias++;
+				System.out.println("Antialiasing: " + antialias);
+			}
+			if(KeyboardInput.isKeyDown(GLFW_KEY_MINUS) && maxrayiterations > 0) {
+				if(antialias > 1) {
+					antialias--;
+				}
+				System.out.println("Antialiasing: " + antialias);
+			}
 		} else {
 			if(KeyboardInput.isKeyDown(GLFW_KEY_EQUAL)) {
 				maxDEiterations++;
@@ -752,6 +764,7 @@ public final class RunFractal {
         clSetKernelArg1i(clKernel, 1, height);
         clSetKernelArg1i(clKernel, 7, maxrayiterations);
         clSetKernelArg1i(clKernel, 8, maxDEiterations);
+        clSetKernelArg1i(clKernel, 10, antialias);
         if (!is64bit || !isDoubleFPAvailable(deviceCaps)) {
             clSetKernelArg1f(clKernel, 3, (float)camera.getLocation().getX());
             clSetKernelArg1f(clKernel, 4, (float)camera.getLocation().getY());

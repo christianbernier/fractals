@@ -15,6 +15,8 @@
 	#define _1 1.0
 	#define fov 1.0471975512 //PI/3
 	#define collidethresh 0.0001
+	#define maxraylength 5
+	#define PI 3.14159
 #else
     #define varfloat float
 	#define varfloat2 float2
@@ -25,6 +27,8 @@
 	#define _1 1.0f
 	#define fov 1.0471975512f //PI/3 
 	#define collidethresh 0.000001f
+	#define maxraylength 5
+	#define PI 3.14159f
 #endif
 
 //DISTANCE ESTIMATORS https://iquilezles.org/www/articles/distfunctions/distfunctions.htm
@@ -197,6 +201,31 @@ varfloat DE_Mandelbox_t(varfloat3 vec, int DE_Iters, varfloat t) {
 	return length(vec) / fabs(dr);
 }
 
+varfloat2 fold(varfloat2 vec, varfloat ang){
+    varfloat2 n = (varfloat2)(cos(-ang), sin(-ang));
+    vec -= 2.0 * min(_0, dot(vec, n)) * n;
+    return vec;
+}
+
+varfloat3 tri_fold(varfloat3 vec, varfloat t) {
+    vec.xy = fold(vec.xy, PI/3.0 - cos(t)/10.0);
+    vec.xy = fold(vec.xy, -PI/3.0);
+    vec.yz = fold(vec.yz, -PI/6.0 + sin(t)/2.0);
+    vec.yz = fold(vec.yz, PI/6.0);
+    return vec;
+}
+
+varfloat DE_Koch_t(varfloat3 vec, varfloat t){
+    vec *= 0.75;
+    vec.x += 1.5;
+    for(int i = 0; i < 8; i++){
+        vec *= 2.0;
+        vec.x -= 2.6;
+        vec = tri_fold(vec, t);
+    }
+    return length( vec*0.004 ) - 0.01;
+}
+
 /*varfloat DE(varfloat3 vec) {
 	
 }*/
@@ -224,16 +253,17 @@ varfloat3 Hue(varfloat hue) { //Hue is from 0 to 1
 	return (varfloat3)(_1, _0, x);
 }
 
-kernel void raymarch(const int width, 
-					 const int height,
-					 __write_only image2d_t output,
-					 const varfloat px, 
-					 const varfloat py, 
-					 const varfloat pz,
-					 __constant float *m,
-					 const int maxrayiterations,
-					 const int DE_Iters,
-					 const varfloat t) {
+kernel void raymarch(const int width, 				//0
+					 const int height,				//1
+					 __write_only image2d_t output, //2
+					 const varfloat px, 			//3	
+					 const varfloat py, 			//4
+					 const varfloat pz,				//5
+					 __constant float *mat,			//6
+					 const int maxrayiterations,	//7
+					 const int DE_Iters,			//8
+					 const varfloat t,				//9
+					 const int AA) {				//10
 
 	int2 pixelcoords = {get_global_id(0), get_global_id(1)};
 	
@@ -242,39 +272,58 @@ kernel void raymarch(const int width,
 	//varfloat p = pitch - f/2.0 + f*iy/height;
 	//varfloat3 direction = {sin(y)*cos(p), cos(y)*cos(p), sin(p)};
 	
-    varfloat3 position = {px, py, pz};
+	varfloat3 position = {px, py, pz};
 	
-	varfloat2 p = {-width+2.0*pixelcoords.x, -height+2.0*pixelcoords.y};
+	varfloat3 colorvec = {0, 0, 0};
 	
-	p /= (varfloat)height;
+	for(int m = 0; m < AA; m++) {
+		for(int n = 0; n < AA; n++) {
+			varfloat2 p = {-width+2.0*(pixelcoords.x + (varfloat)m/(varfloat)AA - 0.5), -height+2.0*(pixelcoords.y + (varfloat)n/(varfloat)AA - 0.5)};
+			
+			p /= (varfloat)height;
+			
+			varfloat3 temp = normalize((varfloat3)(p.x, p.y, 2.0));
+			//012345678
+			//ABCDEFGHI
+			//P1   A D G   P1A+P2D+P3G
+			//P2 * B E H = P1B+P2E+P3H
+			//P3   C F I   P1C+P2F+P3I
+			
+			varfloat3 direction = {temp.x * mat[0] + temp.y * mat[3] + temp.z * mat[6], 
+								   temp.x * mat[1] + temp.y * mat[4] + temp.z * mat[7],
+								   temp.x * mat[2] + temp.y * mat[5] + temp.z * mat[8]};
+			
+			//varfloat2 p = ((varfloat2)(width, height) + 2.0*(varfloat2)(pixelcoords))/(varfloat)(height);
+			
+			int rayiterations = 0;
+			varfloat currentDist = 1;
+			varfloat raylength = 0;
+			bool collided = true;
+			
+			while(currentDist > collidethresh) {
+				currentDist = DE_Koch_t(position, t*2*PI);
+				position += direction * currentDist;
+				raylength += currentDist;
+				rayiterations++;
+				if(raylength > maxraylength || rayiterations > maxrayiterations) {
+					collided = false;
+					break;
+				}
+			}
+			
+			if(collided) {
+				colorvec += Hue(fmod(length(position), 1.0))*(maxrayiterations-rayiterations)/maxrayiterations;
+			} else {
+				colorvec += (varfloat3)(0, 0, 0);
+			}
+		}
+	}
 	
-	varfloat3 temp = normalize((varfloat3)(p.x, p.y, 2.0));
-	//012345678
-	//ABCDEFGHI
-	//P1   A D G   P1A+P2D+P3G
-	//P2 * B E H = P1B+P2E+P3H
-	//P3   C F I   P1C+P2F+P3I
+	if(AA > 1) {
+		colorvec /= (varfloat)(AA*AA);
+	}
 	
-	varfloat3 direction = {temp.x*m[0]+temp.y*m[3]+temp.z*m[6], 
-						   temp.x*m[1]+temp.y*m[4]+temp.z*m[7],
-						   temp.x*m[2]+temp.y*m[5]+temp.z*m[8]};
+	//colorvec *= _255;
 	
-	//varfloat2 p = ((varfloat2)(width, height) + 2.0*(varfloat2)(pixelcoords))/(varfloat)(height);
-    
-	//direction = {0, 1, 0};
-	
-    int rayiterations = 0;
-    varfloat currentDist = 1;
-	varfloat hue;
-	
-    while(rayiterations < maxrayiterations && currentDist > collidethresh) {
-    	currentDist = DE_Mandelbox(position, DE_Iters);
-		position += direction * currentDist;
-    	rayiterations++;
-    }
-	
-	varfloat color = _255*(maxrayiterations-rayiterations)/maxrayiterations;
-	varfloat3 colorvec = Hue(fmod(length(position), 1.0))*color;
-	//varfloat color = _255*(DE_Iters-bulbiterations)/(DE_Iters);
-	write_imageui(output,  pixelcoords, (uint4)(colorvec.x, colorvec.y, colorvec.z, 255));
+	write_imageui(output,  pixelcoords, (uint4)(255*colorvec.x, 255*colorvec.y, 255*colorvec.z, 255));
 }
