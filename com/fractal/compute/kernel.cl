@@ -276,36 +276,48 @@ kernel void raymarch(const int width, 				//0
 	
 	varfloat3 colorvec = {0, 0, 0};
 	
+	varfloat2 p;
+	varfloat3 temp;
+	varfloat3 direction;
+	int rayiterations;
+	varfloat currentDist;
+	varfloat raylength;
+	bool collided;
+	
+	varfloat z = 0;
+	
 	for(int m = 0; m < AA; m++) {
+		p.x = (-width+2.0*(pixelcoords.x + (varfloat)m/(varfloat)AA - 0.5))/(varfloat)height;
 		for(int n = 0; n < AA; n++) {
-			varfloat2 p = {-width+2.0*(pixelcoords.x + (varfloat)m/(varfloat)AA - 0.5), -height+2.0*(pixelcoords.y + (varfloat)n/(varfloat)AA - 0.5)};
+			p.y = (-height+2.0*(pixelcoords.y + (varfloat)n/(varfloat)AA - 0.5))/(varfloat)height;
 			
-			p /= (varfloat)height;
+			temp = normalize((varfloat3)(p.x, p.y, 2.0));
 			
-			varfloat3 temp = normalize((varfloat3)(p.x, p.y, 2.0));
+			position = (varfloat3)(px, py, pz);
+			
 			//012345678
 			//ABCDEFGHI
 			//P1   A D G   P1A+P2D+P3G
 			//P2 * B E H = P1B+P2E+P3H
 			//P3   C F I   P1C+P2F+P3I
 			
-			varfloat3 direction = {temp.x * mat[0] + temp.y * mat[3] + temp.z * mat[6], 
-								   temp.x * mat[1] + temp.y * mat[4] + temp.z * mat[7],
-								   temp.x * mat[2] + temp.y * mat[5] + temp.z * mat[8]};
+			direction.x = temp.x * mat[0] + temp.y * mat[3] + temp.z * mat[6]; 
+			direction.y = temp.x * mat[1] + temp.y * mat[4] + temp.z * mat[7];
+			direction.z = temp.x * mat[2] + temp.y * mat[5] + temp.z * mat[8];
 			
 			//varfloat2 p = ((varfloat2)(width, height) + 2.0*(varfloat2)(pixelcoords))/(varfloat)(height);
 			
-			int rayiterations = 0;
-			varfloat currentDist = 1;
-			varfloat raylength = 0;
-			bool collided = true;
+			rayiterations = 0;
+			currentDist = 1;
+			raylength = 0;
+			collided = true;
 			
 			while(currentDist > collidethresh) {
-				currentDist = DE_Koch_t(position, t*2*PI);
+				currentDist = DE_Mandelbox(position, DE_Iters);
 				position += direction * currentDist;
 				raylength += currentDist;
 				rayiterations++;
-				if(raylength > maxraylength || rayiterations > maxrayiterations) {
+				if(raylength >= maxraylength || rayiterations >= maxrayiterations) {
 					collided = false;
 					break;
 				}
@@ -325,5 +337,5 @@ kernel void raymarch(const int width, 				//0
 	
 	//colorvec *= _255;
 	
-	write_imageui(output,  pixelcoords, (uint4)(255*colorvec.x, 255*colorvec.y, 255*colorvec.z, 255));
+	write_imageui(output, pixelcoords, (uint4)(255*colorvec.x, 255*colorvec.y, 255*colorvec.z, 255));
 }
