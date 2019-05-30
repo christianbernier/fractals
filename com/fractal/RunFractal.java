@@ -251,6 +251,8 @@ public final class RunFractal {
 		GLFWVidMode vidMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 		
 		glfwSetWindowPos(window.handle, 100, 100);
+		
+		STBImageWrite.stbi_flip_vertically_on_write(true);
 	}
 	
 	public static void init_Compute() {		
@@ -993,13 +995,19 @@ public static void exportImage() {
     	System.out.println("Saving screenshot...");
     	GL11.glReadBuffer(GL11.GL_FRONT);
     	int bpp = 4; //R, G, B, A
-    	ByteBuffer buffer = BufferUtils.createByteBuffer(4 * width * height * bpp);
-    	GL11.glReadPixels(0, 0, width * 2, height * 2, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer);
     	
     	Date today = new Date();
     	SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
     	String filename = "exports/" + sdf.format(today) + ".bmp";
-    	STBImageWrite.stbi_write_bmp(filename, width * 2, height * 2, 4, buffer);
+    	if(Platform.get() == Platform.WINDOWS) {
+    		ByteBuffer buffer = BufferUtils.createByteBuffer(width * height * bpp);
+    		GL11.glReadPixels(0, 0, width, height, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer);
+    		STBImageWrite.stbi_write_bmp(filename, width, height, 4, buffer);
+    	} else {
+    		ByteBuffer buffer = BufferUtils.createByteBuffer(4 * width * height * bpp);
+    		GL11.glReadPixels(0, 0, width * 2, height * 2, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer);
+    		STBImageWrite.stbi_write_bmp(filename, width * 2, height * 2, 4, buffer);
+    	}
     	System.out.println("Screenshot saved as " + filename);
     }
 }
