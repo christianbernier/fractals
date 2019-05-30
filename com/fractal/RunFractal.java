@@ -4,14 +4,16 @@ import org.lwjgl.*;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opencl.*;
 import org.lwjgl.opengl.*;
+import org.lwjgl.stb.STBImage;
+import org.lwjgl.stb.STBImageWrite;
 import org.lwjgl.system.*;
 
 import java.io.*;
 import java.nio.*;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.*;
-//import java.awt.Font;
 
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
@@ -30,7 +32,7 @@ import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
 import com.fractal.graphics.input.*;
-//import com.fractal.graphics.fractalEngine.PixelObject;
+import com.fractal.graphics.fractalEngine.PixelObject;
 import static com.fractal.compute.utils.IOUtil.*;
 import static com.fractal.compute.utils.InfoUtil.*;
 import com.fractal.compute.*;
@@ -82,7 +84,7 @@ public final class RunFractal {
 
     private static CLContextCallback clContextCB;
     
-    private static Callback debugProc; //warning says unused but it actually is used
+    private static Callback debugProc;
 
     private static long clContext;
     //private final long clColorMap;
@@ -92,8 +94,10 @@ public final class RunFractal {
     private static long clTexture;
     private static long matrixhandle;
     
-    private static double frameNumber = 1;
-    private static final double frameLimit = 200;
+    private static double frameNumber = 300;
+    private static final double frameLimit = 1000;
+    private static int millisForFPS = 0;
+    private static int framesPerSecond = 0;
 
     private static final PointerBuffer kernel2DGlobalWorkSize = BufferUtils.createPointerBuffer(2);
 
@@ -114,7 +118,9 @@ public final class RunFractal {
 
     // VIEWPORT
 
-    private static int fbw, fbh;
+    private static int
+        fbw,
+        fbh;
 
     // EVENT SYNCING
 
@@ -129,9 +135,9 @@ public final class RunFractal {
     private static boolean shouldInitBuffers = true;
     private static boolean rebuild;
 	public static boolean running = false;
-	public static boolean play = false;
 	public static GLFWWindow window;
-	public static int width = 640;
+
+    public static int width = 640;
 	public static int height = 480;
 	private static int maxrayiterations = 100;
 	private static int maxDEiterations = 20;
@@ -145,7 +151,7 @@ public final class RunFractal {
 	private static final GLFWWindowSizeCallback sizeCallback = new SizeInput();
 	//private static DoubleBuffer guiAxesCoords = BufferUtils.createDoubleBuffer(6);
 	
-	private static Camera camera = new Camera(new Vector3D(0, -2.5, 0));
+	private static Camera camera = new Camera();
 	private static FloatBuffer cameraMatrix = BufferUtils.createFloatBuffer(9);
 	
 	//private static PixelObject pixels;
@@ -249,6 +255,8 @@ public final class RunFractal {
 		GLFWVidMode vidMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 		
 		glfwSetWindowPos(window.handle, 100, 100);
+		
+		STBImageWrite.stbi_flip_vertically_on_write(true);
 	}
 	
 	public static void init_Compute() {		
@@ -428,12 +436,12 @@ public final class RunFractal {
 	public static void handleInput(double timeDelta) {
 		glfwPollEvents();
 		double m = KEYBOARDCOEFFICIENT * timeDelta;
-		if(KeyboardInput.isKeyDown(GLFW_KEY_Q)) {
-			System.out.println("Roll Camera CCW");
-		}
-		if(KeyboardInput.isKeyDown(GLFW_KEY_E)) {
-			System.out.println("Roll Camera CW");
-		}
+//		if(KeyboardInput.isKeyDown(GLFW_KEY_Q)) {
+//			System.out.println("Roll Camera CCW");
+//		}
+//		if(KeyboardInput.isKeyDown(GLFW_KEY_E)) {
+//			System.out.println("Roll Camera CW");
+//		}
 		if(KeyboardInput.isKeyDown(GLFW_KEY_W)) {
 			//System.out.println("Move Camera Forward");
 			camera.moveRelativeY(m); 
@@ -458,64 +466,17 @@ public final class RunFractal {
 			//System.out.println("Move Camera Up");
 			camera.moveRelativeZ(m);
 		} 
-		if(KeyboardInput.isKeyDown(GLFW_KEY_ESCAPE)) {
+		if (KeyboardInput.isKeyDown(GLFW_KEY_ESCAPE)) {
 			glfwSetInputMode(window.handle, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 		}
-		if(KeyboardInput.isKeyDown(GLFW_KEY_PERIOD)) {
+		if (KeyboardInput.isKeyDown(GLFW_KEY_P)) {
             doublePrecision = !doublePrecision;
             log("DOUBLE PRECISION IS NOW: " + (doublePrecision ? "ON" : "OFF"));
             rebuild = true;
 		}
-		if(KeyboardInput.isKeyDown(GLFW_KEY_RIGHT_SHIFT)) {
-			if(KeyboardInput.isKeyDown(GLFW_KEY_EQUAL)) {
-				maxrayiterations++;
-				System.out.println("Max Ray Iterations: " + maxrayiterations);
-			}
-			if(KeyboardInput.isKeyDown(GLFW_KEY_MINUS) && maxrayiterations > 0) {
-				maxrayiterations--;
-				System.out.println("Max Ray Iterations: " + maxrayiterations);
-			}
-		} else if(KeyboardInput.isKeyDown(GLFW_KEY_RIGHT_CONTROL)) {
-			if(KeyboardInput.isKeyDown(GLFW_KEY_EQUAL)) {
-				KEYBOARDCOEFFICIENT *= 2.0;
-				System.out.println("Movement Speed: " + KEYBOARDCOEFFICIENT);
-			}
-			if(KeyboardInput.isKeyDown(GLFW_KEY_MINUS) && maxrayiterations > 0) {
-				KEYBOARDCOEFFICIENT /= 2.0;
-				System.out.println("MOVEMENT SPEED: " + KEYBOARDCOEFFICIENT);
-			}
-		} else if(KeyboardInput.isKeyDown(GLFW_KEY_RIGHT_ALT)) {
-			if(KeyboardInput.isKeyDown(GLFW_KEY_EQUAL)) {
-				antialias++;
-				System.out.println("Antialiasing: " + antialias);
-			}
-			if(KeyboardInput.isKeyDown(GLFW_KEY_MINUS) && maxrayiterations > 0) {
-				if(antialias > 1) {
-					antialias--;
-				}
-				System.out.println("Antialiasing: " + antialias);
-			}
-		} else {
-			if(KeyboardInput.isKeyDown(GLFW_KEY_EQUAL)) {
-				maxDEiterations++;
-				System.out.println("Max Fractal Iterations: " + maxDEiterations);
-			}
-			if(KeyboardInput.isKeyDown(GLFW_KEY_MINUS) && maxDEiterations > 0) {
-				maxDEiterations--;
-				System.out.println("Max Fractal Iterations: " + maxDEiterations);
-			}
+		if(KeyboardInput.isKeyDown(GLFW_KEY_E)) {
+			exportImage();
 		}
-		if(KeyboardInput.isKeyDown(GLFW_KEY_C)) {
-			System.out.println("X" + camera.getLocation().getX() + " Y" + camera.getLocation().getY() + " Z" + camera.getLocation().getZ() + " P" + camera.getPitch()*180.0/Math.PI + " Y" + camera.getYaw()*180.0/Math.PI + " " + camera.getRelativeY());
-		}
-		if(KeyboardInput.isKeyDown(GLFW_KEY_P)) {
-			play = !play;
-		}
-		
-		if(play) {
-			System.out.println("Frame Number: " + frameNumber);
-		}
-		
 		
 		if(glfwGetMouseButton(window.handle, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
 			glfwSetInputMode(window.handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -529,7 +490,7 @@ public final class RunFractal {
 	        fbw = size.get(0);
 	        fbh = size.get(1);
 	        shouldInitBuffers = true;
-			//rebuild = true;
+			rebuild = true;
 		}
 		
 		if(glfwGetInputMode(window.handle, GLFW_CURSOR) == GLFW_CURSOR_DISABLED) {
@@ -544,10 +505,6 @@ public final class RunFractal {
 			camera.constructRelativeAxes();
 		}
 		
-		//camera.setAngle(0, -Math.PI/2.0);
-		
-		//System.out.println(camera + " Time: " + timeDelta + " Width: " + width + " Height: " + height + " X: " + MouseInput.x + " Y: " + MouseInput.y);
-//		System.out.println("X" + camera.getLocation().getX() + " Y" + camera.getLocation().getY() + " Z" + camera.getLocation().getZ() + " P" + camera.getPitch()*180.0/Math.PI + " Y" + camera.getYaw()*180.0/Math.PI + " " + camera.getRelativeY());
 	}
 	
 	public static void main(String[] args) {
@@ -584,13 +541,16 @@ public final class RunFractal {
 			if(timeDelta <= 0) {
 				timeDelta = 1;
 			}
+			frameNumber++;
 			
-			if(play) {
-				frameNumber++;
-				if(frameNumber >= frameLimit) {
-					frameNumber = 1;
-				}
+			
+			if(frameNumber >= frameLimit) {
+				frameNumber = 1;
 			}
+			
+			
+			
+//			running = false;
 		}
 		
 		if (window.signal.getCount() == 0) {
@@ -637,12 +597,12 @@ public final class RunFractal {
         /** Used to signal that the rendering thread has completed. */
         public final CountDownLatch signal;
 
-        //GLFWWindowSizeCallback      windowsizefun;
-        //GLFWFramebufferSizeCallback framebuffersizefun;
-        //GLFWKeyCallback             keyfun;
-        //GLFWMouseButtonCallback     mousebuttonfun;
-        //GLFWCursorPosCallback       cursorposfun;
-        //GLFWScrollCallback          scrollfun;
+        GLFWWindowSizeCallback      windowsizefun;
+        GLFWFramebufferSizeCallback framebuffersizefun;
+        GLFWKeyCallback             keyfun;
+        GLFWMouseButtonCallback     mousebuttonfun;
+        GLFWCursorPosCallback       cursorposfun;
+        GLFWScrollCallback          scrollfun;
 
         private GLFWWindow(long handle, String ID, CountDownLatch signal) {
             this.handle = handle;
@@ -762,19 +722,19 @@ public final class RunFractal {
         clEnqueueWriteBuffer(clQueue, matrixhandle, true, 0, cameraMatrix, null, null);
         clSetKernelArg1i(clKernel, 0, width);
         clSetKernelArg1i(clKernel, 1, height);
-        clSetKernelArg1i(clKernel, 7, maxrayiterations);
-        clSetKernelArg1i(clKernel, 8, maxDEiterations);
-        clSetKernelArg1i(clKernel, 10, antialias);
+        
         if (!is64bit || !isDoubleFPAvailable(deviceCaps)) {
-            clSetKernelArg1f(clKernel, 3, (float)camera.getLocation().getX());
-            clSetKernelArg1f(clKernel, 4, (float)camera.getLocation().getY());
-            clSetKernelArg1f(clKernel, 5, (float)camera.getLocation().getZ());
-            clSetKernelArg1f(clKernel, 9, (float) (frameNumber/frameLimit));
-        } else {	
-            clSetKernelArg1d(clKernel, 3, camera.getLocation().getX());	
-            clSetKernelArg1d(clKernel, 4, camera.getLocation().getY());
-            clSetKernelArg1d(clKernel, 5, camera.getLocation().getZ());
-            clSetKernelArg1d(clKernel, 9, frameNumber/frameLimit);
+            clSetKernelArg1f(clKernel, 3, (float)fov);   
+            clSetKernelArg1f(clKernel, 4, (float)camera.getLocation().getX());
+            clSetKernelArg1f(clKernel, 5, (float)camera.getLocation().getY());
+            clSetKernelArg1f(clKernel, 6, (float)camera.getLocation().getZ());
+            clSetKernelArg1f(clKernel, 8, (float) (frameNumber/frameLimit));
+        } else {
+        	clSetKernelArg1d(clKernel, 3, fov);   	
+            clSetKernelArg1d(clKernel, 4, camera.getLocation().getX());	
+            clSetKernelArg1d(clKernel, 5, camera.getLocation().getY());
+            clSetKernelArg1d(clKernel, 6, camera.getLocation().getZ());
+            clSetKernelArg1d(clKernel, 8, frameNumber/frameLimit);
         }
 
         // acquire GL objects, and enqueue a kernel with a probe from the list
@@ -949,7 +909,7 @@ public final class RunFractal {
 
     private static void setKernelConstants() {
     	clSetKernelArg1p(clKernel, 2, clTexture);
-    	clSetKernelArg1p(clKernel, 6, matrixhandle);
+    	clSetKernelArg1p(clKernel, 7, matrixhandle);
     }
     
     private static void parseArgs(String... args) {
@@ -985,5 +945,19 @@ public final class RunFractal {
                 }
             }
         }
+    }
+   
+    public static void exportImage() {
+    	System.out.println("Saving screenshot...");
+    	GL11.glReadBuffer(GL11.GL_FRONT);
+    	int bpp = 4; //R, G, B, A
+    	ByteBuffer buffer = BufferUtils.createByteBuffer(4 * width * height * bpp);
+    	GL11.glReadPixels(0, 0, width * 2, height * 2, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer);
+    	
+    	Date today = new Date();
+    	SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
+    	String filename = "exports/" + sdf.format(today) + ".bmp";
+    	STBImageWrite.stbi_write_bmp(filename, width * 2, height * 2, 4, buffer);
+    	System.out.println("Screenshot saved as " + filename);
     }
 }
