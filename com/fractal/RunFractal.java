@@ -432,7 +432,7 @@ public final class RunFractal {
 			System.out.println("Roll Camera CCW");
 		}
 		if(KeyboardInput.isKeyDown(GLFW_KEY_E)) {
-			System.out.println("Roll Camera CW");
+			exportImage();
 		}
 		if(KeyboardInput.isKeyDown(GLFW_KEY_W)) {
 			//System.out.println("Move Camera Forward");
