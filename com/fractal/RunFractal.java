@@ -134,7 +134,7 @@ public final class RunFractal {
 	public static int width = 640;
 	public static int height = 480;
 	private static int maxrayiterations = 100;
-	private static int maxDEiterations = 7;
+	private static int maxDEiterations = 20;
 	private static double MOUSECOEFFICIENT = 200;
 	private static double KEYBOARDCOEFFICIENT = 0.0002;
 	private static int antialias = 1;

@@ -313,7 +313,7 @@ kernel void raymarch(const int width, 				//0
 			collided = true;
 			
 			while(currentDist > collidethresh) {
-				currentDist = DE_Mandelbox(position, DE_Iters);
+				currentDist = DE_Koch_t(position, t);
 				position += direction * currentDist;
 				raylength += currentDist;
 				rayiterations++;
