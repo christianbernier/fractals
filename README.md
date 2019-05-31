@@ -60,3 +60,16 @@ A project for AP CS, where we render 3D fractals using distance estimators and r
   <li>Fractals are colored based on distance from the origin, more sophisticated coloring that emphasizes the structure of the fractal to be added later. </li>
   <li>More control over the renderer: +/- adjusts the number of iterations for the fractal and shift +/- adjusts the number of iterations per ray. p also plays/pauses the animation.</li>
 </ul>
+
+## Week 7 Update (5/24)
+<ul>
+  <li>Added antialiasing</li>
+  <li>Added 3d Kock Snowflake Fractal</li>
+  <li>Added the ability to export a frame</li>
+</ul>
+
+## Week 8 Update (5/31)
+<ul>
+  <li>Added arbitrarily high resolution image export</li>
+  <li>
+</ul>
