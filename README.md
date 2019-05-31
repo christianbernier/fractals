@@ -66,10 +66,10 @@ A project for AP CS, where we render 3D fractals using distance estimators and r
   <li>Added antialiasing</li>
   <li>Added 3d Kock Snowflake Fractal</li>
   <li>Added the ability to export a frame</li>
+  <li>Ctrl +/- to increase/decrease movement speed</li>
 </ul>
 
 ## Week 8 Update (5/31)
 <ul>
   <li>Added arbitrarily high resolution image export</li>
-  <li>
 </ul>
