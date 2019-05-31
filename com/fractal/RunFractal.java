@@ -133,10 +133,14 @@ public final class RunFractal {
 	public static boolean running = false;
 	public static boolean play = false;
 	public static GLFWWindow window;
-	public static int width = 640;
-	public static int height = 480;
+	public static final int initWidth = 640;
+	public static final int initHeight = 480;
+	public static final int hiresWidth = 7680;
+	public static final int hiresHeight = 4320;
+	public static int width = initWidth;
+	public static int height = initHeight;
 	private static int maxrayiterations = 100;
-	private static int maxDEiterations = 7;
+	private static int maxDEiterations = 20;
 	private static double MOUSECOEFFICIENT = 200;
 	private static double KEYBOARDCOEFFICIENT = 0.0002;
 	private static int antialias = 1;
@@ -433,10 +437,33 @@ public final class RunFractal {
 		glfwPollEvents();
 		double m = KEYBOARDCOEFFICIENT * timeDelta;
 		if(KeyboardInput.isKeyDown(GLFW_KEY_Q)) {
-			System.out.println("Roll Camera CCW");
+			glfwSetWindowShouldClose(window.handle, true);
 		}
 		if(KeyboardInput.isKeyDown(GLFW_KEY_E)) {
 			exportImage();
+		}
+		if(KeyboardInput.isKeyDown(GLFW_KEY_R)) {
+			System.out.println("Generating High Res Screenshot");
+			width = hiresWidth;
+			height = hiresHeight;
+			//glfwSetWindowSize(window.handle, width, height);
+			IntBuffer size = BufferUtils.createIntBuffer(2);
+			nglfwGetFramebufferSize(window.handle, memAddress(size), memAddress(size) + 4);
+	        fbw = size.get(0);
+	        fbh = size.get(1);
+	        shouldInitBuffers = true;
+	        render_Compute();
+			//render_Graphics();
+			//glfwSwapBuffers(window.handle);
+			exportImage();
+			width = initWidth;
+			height = initHeight;
+			//glfwSetWindowSize(window.handle, width, height);
+			size = BufferUtils.createIntBuffer(2);
+			nglfwGetFramebufferSize(window.handle, memAddress(size), memAddress(size) + 4);
+	        fbw = size.get(0);
+	        fbh = size.get(1);
+	        shouldInitBuffers = true;
 		}
 		if(KeyboardInput.isKeyDown(GLFW_KEY_W)) {
 			//System.out.println("Move Camera Forward");
@@ -533,7 +560,6 @@ public final class RunFractal {
 	        fbw = size.get(0);
 	        fbh = size.get(1);
 	        shouldInitBuffers = true;
-			//rebuild = true;
 		}
 		
 		if(glfwGetInputMode(window.handle, GLFW_CURSOR) == GLFW_CURSOR_DISABLED) {
@@ -565,8 +591,7 @@ public final class RunFractal {
 		while(running) {
 			handleInput(timeDelta);
 			render_Compute();
-			//render_Graphics();
-			
+			render_Graphics();
 			glfwSwapBuffers(window.handle);
 			
 			if(glfwWindowShouldClose(window.handle)) {
@@ -785,11 +810,7 @@ public final class RunFractal {
         int errcode = clEnqueueAcquireGLObjects(clQueue, clTexture, null, null);
         checkCLError(errcode);
 
-        errcode = clEnqueueNDRangeKernel(clQueue, clKernel, 2,
-            null,
-            kernel2DGlobalWorkSize,
-            null,
-            null, null);
+        errcode = clEnqueueNDRangeKernel(clQueue, clKernel, 2, null, kernel2DGlobalWorkSize, null, null, null);
         checkCLError(errcode);
 
         errcode = clEnqueueReleaseGLObjects(clQueue, clTexture, null, !syncGLtoCL ? syncBuffer : null);
@@ -825,8 +846,9 @@ public final class RunFractal {
             clEvent = NULL;
             checkCLError(errcode);
         }
-
+        
         glBindTexture(GL_TEXTURE_2D, glTexture);
+        
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     }
 
@@ -991,22 +1013,22 @@ public final class RunFractal {
         }
     }
 	
-public static void exportImage() {
+    public static void exportImage() {  	    	
     	System.out.println("Saving screenshot...");
-    	GL11.glReadBuffer(GL11.GL_FRONT);
-    	int bpp = 4; //R, G, B, A
+    	//GL11.glReadBuffer(GL11.GL_FRONT);
+    	final int bpp = 4; //R, G, B, A
     	
     	Date today = new Date();
     	SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
     	String filename = "exports/" + sdf.format(today) + ".bmp";
     	if(Platform.get() == Platform.WINDOWS) {
-    		ByteBuffer buffer = BufferUtils.createByteBuffer(width * height * bpp);
-    		GL11.glReadPixels(0, 0, width, height, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer);
-    		STBImageWrite.stbi_write_bmp(filename, width, height, 4, buffer);
+        	ByteBuffer buffer = BufferUtils.createByteBuffer(width * height * bpp);
+        	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA_INTEGER, GL_UNSIGNED_BYTE, buffer);
+    		STBImageWrite.stbi_write_bmp(filename, width, height, bpp, buffer);
     	} else {
     		ByteBuffer buffer = BufferUtils.createByteBuffer(4 * width * height * bpp);
-    		GL11.glReadPixels(0, 0, width * 2, height * 2, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer);
-    		STBImageWrite.stbi_write_bmp(filename, width * 2, height * 2, 4, buffer);
+    		glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA_INTEGER, GL_UNSIGNED_BYTE, buffer);
+    		STBImageWrite.stbi_write_bmp(filename, width * 2, height * 2, bpp, buffer);
     	}
     	System.out.println("Screenshot saved as " + filename);
     }
