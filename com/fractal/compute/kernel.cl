@@ -31,21 +31,10 @@
 	#define PI 3.14159f
 #endif
 
+#define DEFUNCTION DE_Mandelbox_c(position, DE_Iters, &c)
+
 //DISTANCE ESTIMATORS https://iquilezles.org/www/articles/distfunctions/distfunctions.htm
 //OPENCL SPECIFICATION https://www.khronos.org/registry/OpenCL/specs/opencl-2.1.pdf
-
-varfloat DE_Sphere(varfloat3 vec, varfloat3 center, varfloat radius);
-varfloat DE_Torus(varfloat3 vec, varfloat3 center, varfloat2 t);
-varfloat DE_Box(varfloat3 vec, varfloat3 center, varfloat3 b);
-varfloat DE_Sponge(varfloat3 vec, int DE_Iters);
-varfloat DE_Mandelbulb(varfloat3 vec, int DE_Iters);
-varfloat DE_Mandelbulb_t(varfloat3 vec, int DE_Iters, varfloat t);
-void sphereFold(varfloat3 *vec, varfloat *dz);
-void boxFold(varfloat3 *vec);
-varfloat DE_Mandelbox(varfloat3 vec, int DE_Iters);
-varfloat DE_Mandelbox_t(varfloat3 vec, int DE_Iters, varfloat t);
-varfloat3 Hue(varfloat hue);
-//varfloat DE(varfloat3 vec);
 
 varfloat DE_Sphere(varfloat3 vec, varfloat3 center, varfloat radius) { 
 	return distance(vec, center) - radius;
@@ -187,8 +176,25 @@ varfloat DE_Mandelbox(varfloat3 vec, int DE_Iters) {
 	return length(vec) / fabs(dr);
 }
 
+varfloat DE_Mandelbox_c(varfloat3 vec, int DE_Iters, varfloat *c) {
+	varfloat3 offset = vec;
+	varfloat dr = _1;
+	varfloat len;
+	for(int n = 0; n < DE_Iters; n++) {
+		boxFold(&vec);       // Reflect
+		sphereFold(&vec, &dr);    // Sphere Inversion
+ 		vec = scale*vec + offset;  // Scale & Translate
+        dr = dr*fabs(scale)+ _1;
+        len = length(vec);
+        if(len < *c) {
+        	*c = len;
+        }
+    }
+	return len / fabs(dr);
+}
+
 varfloat DE_Mandelbox_t(varfloat3 vec, int DE_Iters, varfloat t) {
-	t += 0.5;
+	t += 0.5f;
 	t *= scale;
 	varfloat3 offset = vec;
 	varfloat dr = t;//1.0;
@@ -203,27 +209,27 @@ varfloat DE_Mandelbox_t(varfloat3 vec, int DE_Iters, varfloat t) {
 
 varfloat2 fold(varfloat2 vec, varfloat ang){
     varfloat2 n = (varfloat2)(cos(-ang), sin(-ang));
-    vec -= 2.0 * min(_0, dot(vec, n)) * n;
+    vec -= 2.0f * min(_0, dot(vec, n)) * n;
     return vec;
 }
 
 varfloat3 tri_fold(varfloat3 vec, varfloat t) {
-    vec.xy = fold(vec.xy, PI/3.0 - cos(t)/10.0);
-    vec.xy = fold(vec.xy, -PI/3.0);
-    vec.yz = fold(vec.yz, -PI/6.0 + sin(t)/2.0);
-    vec.yz = fold(vec.yz, PI/6.0);
+    vec.xy = fold(vec.xy, PI/3.0f - cos(t)/10.0f);
+    vec.xy = fold(vec.xy, -PI/3.0f);
+    vec.yz = fold(vec.yz, -PI/6.0f + sin(t)/2.0f);
+    vec.yz = fold(vec.yz, PI/6.0f);
     return vec;
 }
 
 varfloat DE_Koch_t(varfloat3 vec, varfloat t){
-    vec *= 0.75;
-    vec.x += 1.5;
+    vec *= 0.75f;
+    vec.x += 1.5f;
     for(int i = 0; i < 8; i++){
-        vec *= 2.0;
-        vec.x -= 2.6;
+        vec *= 2.0f;
+        vec.x -= 2.6f;
         vec = tri_fold(vec, t);
     }
-    return length( vec*0.004 ) - 0.01;
+    return length( vec*0.004f ) - 0.01f;
 }
 
 /*varfloat DE(varfloat3 vec) {
@@ -251,6 +257,10 @@ varfloat3 Hue(varfloat hue) { //Hue is from 0 to 1
 			break;
 	}
 	return (varfloat3)(_1, _0, x);
+}
+
+varfloat3 reflect(varfloat3 incident, varfloat3 point) {
+	return incident;
 }
 
 kernel void raymarch(const int width, 				//0
@@ -286,6 +296,8 @@ kernel void raymarch(const int width, 				//0
 	
 	varfloat z = 0;
 	
+	varfloat c;
+	
 	for(int m = 0; m < AA; m++) {
 		p.x = (-width+2.0*(pixelcoords.x + (varfloat)m/(varfloat)AA - 0.5))/(varfloat)height;
 		for(int n = 0; n < AA; n++) {
@@ -311,9 +323,10 @@ kernel void raymarch(const int width, 				//0
 			currentDist = 1;
 			raylength = 0;
 			collided = true;
+			c = 10.0f;
 			
 			while(currentDist > collidethresh) {
-				currentDist = DE_Mandelbox(position, DE_Iters);
+				currentDist = DEFUNCTION;
 				position += direction * currentDist;
 				raylength += currentDist;
 				rayiterations++;
@@ -324,7 +337,7 @@ kernel void raymarch(const int width, 				//0
 			}
 			
 			if(collided) {
-				colorvec += Hue(fmod(length(position), 1.0))*(maxrayiterations-rayiterations)/maxrayiterations;
+				colorvec += Hue(c)*(maxrayiterations-rayiterations)/maxrayiterations; //fmod(length(position), 1.0)
 			} else {
 				colorvec += (varfloat3)(0, 0, 0);
 			}
