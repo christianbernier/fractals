@@ -13,7 +13,6 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.*;
-//import java.awt.Font;
 
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
@@ -148,7 +147,7 @@ public final class RunFractal {
 	
 	private static final GLFWKeyCallback keyCallback = new KeyboardInput();
 	private static final GLFWCursorPosCallback cursorCallback = new MouseInput(width, height);
-	private static final GLFWWindowSizeCallback sizeCallback = new SizeInput();
+	private static final GLFWWindowSizeCallback sizeCallback = new SizeInput(width, height);
 	//private static DoubleBuffer guiAxesCoords = BufferUtils.createDoubleBuffer(6);
 	
 	private static Camera camera = new Camera(new Vector3D(0, -2.5, 0));
@@ -551,8 +550,8 @@ public final class RunFractal {
 		if(glfwGetMouseButton(window.handle, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
 			glfwSetInputMode(window.handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 		}
-			
-		if(Platform.get() == Platform.WINDOWS && (SizeInput.width != width || SizeInput.height != height)) {
+		
+		if(SizeInput.width != width || SizeInput.height != height) {
 			width = SizeInput.width;
 			height = SizeInput.height;
 			IntBuffer size = BufferUtils.createIntBuffer(2);
