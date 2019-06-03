@@ -6,7 +6,9 @@ public class SizeInput extends GLFWWindowSizeCallback{
 	
 	public static int width, height;
 	
-	public SizeInput() {
+	public SizeInput(int w, int h) {
+		width = w;
+		height = h;
 	}
 	
 	@Override
