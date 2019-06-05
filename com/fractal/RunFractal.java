@@ -541,7 +541,24 @@ public final class RunFractal {
 		if(KeyboardInput.isKeyDown(GLFW_KEY_P)) {
 			play = !play;
 		}
-		
+		if(KeyboardInput.isKeyDown(GLFW_KEY_T)) {
+			if(GIFName.equals("")) {
+				System.out.println("Starting GIF save...");
+		    	Date today = new Date();
+		    	SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
+		    	GIFName = "exports/gifs/" + sdf.format(today);
+		    	File f = new File(GIFName);
+		    	f.mkdirs();
+		    	frameCount = "0000";
+			}
+			exportFrame();
+		}
+		if(!KeyboardInput.isKeyDown(GLFW_KEY_T)) {
+			if(!GIFName.equals("")) {
+				makeGIF();
+			}
+			GIFName = "";
+		}
 		if(play) {
 			System.out.println("Frame Number: " + frameNumber);
 		}
@@ -1030,5 +1047,59 @@ public final class RunFractal {
     		STBImageWrite.stbi_write_bmp(filename, width * 2, height * 2, bpp, buffer);
     	}
     	System.out.println("Screenshot saved as " + filename);
+    }
+	
+	private static String GIFName = "";
+    private static String frameCount = "0000";
+    
+    public static void exportFrame() {
+    	final int bpp = 4;
+    	String filename = GIFName + "/frame-"+ frameCount + ".bmp";
+    	System.out.println("Saving as... " + filename);
+    	ByteBuffer buffer = BufferUtils.createByteBuffer(width * height * bpp);
+    	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA_INTEGER, GL_UNSIGNED_BYTE, buffer);
+		STBImageWrite.stbi_write_bmp(filename, width, height, bpp, buffer);
+		increaseFrameCount();
+    }
+    
+    
+    public static void increaseFrameCount() {
+    	int frames = Integer.parseInt(frameCount);
+    	frames++;
+    	String f = "";
+    	if(frames < 1000) {
+    		f += "0";
+    	}
+    	if(frames < 100) {
+    		f += "0";
+    	}
+    	if(frames < 10) {
+    		f += "0";
+    	}
+    	f += frames;
+    	
+    	frameCount = f;
+    }
+    
+    public static void makeGIF() {
+    	System.out.println("Cannot produce GIF.");
+//    	int totalFiles = Integer.parseInt(frameCount);
+//    	frameCount = "0000";
+//    	String[] filenames = new String[totalFiles];
+//    	for(int i = 0; i < totalFiles; i++) {
+//    		filenames[i] = GIFName + "/frame-" + frameCount + ".bmp";
+//    		increaseFrameCount();
+//    	}
+//    	for(String s : filenames) {
+//    		System.out.println("frame: " + s);
+//    	}
+//    	try {
+//    		System.out.println("filename length: " + filenames.length);
+//    		System.out.println("GIFName: " + GIFName + ".gif");
+//			Giffer.generateFromFiles(filenames, GIFName + ".gif", 100, true);
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
+//    	System.out.println("Exported! GIF at " + GIFName + ".gif");
     }
 }
