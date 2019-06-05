@@ -1,6 +1,37 @@
 # fractals
 A project for AP CS, where we render 3D fractals using distance estimators and ray marching.
 
+## Keyboard Inputs
+#### List of all keyboard functions in the Fracal program
+| Key             | Function                         |
+|-----------------|----------------------------------|
+| W               | Move Camera Forward              |
+| S               | Move Camera Backwards            |
+| A               | Move Camera Left                 |
+| D               | Move Camera Right                |
+| Space           | Move Camera Up                   |
+| Left Shift      | Move Camera Down                 |
+| Control +       | Increase Movement Speed          |
+| Control -       | Decrease Movement Speed          |
+|                 |                                  |
+| E               | Export Render                    |
+| R               | Export HD Render                 |
+| T (hold)        | Export GIF Frames                |
+|                 |                                  |
+| Q               | Quit Program                     |
+| P               | Pause/Play Animation             |
+| +               | Increase Max Fractal Iterations  |
+| -               | Decrease Max Fractal Iterations  |
+| Alt +           | Increase Antialias Level         |
+| Alt -           | Decrease Antialias Level         |
+| Right Shift +   | Increase Ray Iterations          |
+| Right Shift -   | Decrease Ray Iterations          |
+|                 |                                  |
+| Escape          | Release Mouse                    |
+| Click on Window | Recapture Mouse                  |
+| C               | Print Camera Location to Console |
+| . (period)      | Toggle Double Precision          |
+
 ## Week 1 Update (4/11)
 <ul>
   <li>GUI/rendering somewhat working</li>
@@ -73,3 +104,5 @@ A project for AP CS, where we render 3D fractals using distance estimators and r
 <ul>
   <li>Added arbitrarily high resolution image export</li>
 </ul>
+
+
