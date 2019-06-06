@@ -283,7 +283,8 @@ kernel void raymarch(const int width, 				//0
 					 const int maxrayiterations,	//7
 					 const int DE_Iters,			//8
 					 const varfloat t,				//9
-					 const int AA) {				//10
+					 const int AA,					//10
+					 const int fractalNum) {		//11
 
 	int2 pixelcoords = {get_global_id(0), get_global_id(1)};
 	
@@ -336,7 +337,15 @@ kernel void raymarch(const int width, 				//0
 			//c = 10.0f;
 			
 			while(currentDist > collidethresh) {
-				currentDist = DEFUNCTION;
+				//currentDist = DEFUNCTION;
+				switch(fractalNum){
+					case 0: currentDist = DE_Mandelbulb(position, DE_Iters); break;
+					case 1: currentDist = DE_Mandelbox_c(position, DE_Iters, &c); break;
+					case 2: currentDist = DE_Sponge(position, DE_Iters); break;
+					case 3: currentDist = DE_Koch_t(position, t); break;
+					
+					default: currentDist = DE_Mandelbox_c(position, DE_Iters, &c); //default
+				}
 				position += direction * currentDist;
 				raylength += currentDist;
 				rayiterations++;
