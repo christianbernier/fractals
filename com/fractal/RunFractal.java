@@ -95,7 +95,15 @@ public final class RunFractal {
     
     private static double frameNumber = 1;
     private static final double frameLimit = 200;
-
+    private static int numOfFractals = 4;
+    /*
+     * 0 - Mandelbulb
+     * 1 - Mandelbox
+     * 2 - Menger Sponge
+     * 3 - Koch Snowflake
+     * */
+    private static int fractalNum = 0;
+	
     private static final PointerBuffer kernel2DGlobalWorkSize = BufferUtils.createPointerBuffer(2);
 
     private static boolean doublePrecision = true;
@@ -569,6 +577,25 @@ public final class RunFractal {
 			}
 			GIFName = "";
 		}
+		
+		//fractal switching
+		if(KeyboardInput.isKeyDown(GLFW_KEY_1)) {
+			fractalNum = 0;
+			System.out.println("Switching to Mandelbulb Fractal");
+		}
+		if(KeyboardInput.isKeyDown(GLFW_KEY_2)) {
+			fractalNum = 1;
+			System.out.println("Switching to Mandelbox Fractal");
+		}
+		if(KeyboardInput.isKeyDown(GLFW_KEY_3)) {
+			fractalNum = 2;
+			System.out.println("Switching to Menger Sponge Fractal");
+		}
+		if(KeyboardInput.isKeyDown(GLFW_KEY_4)) {
+			fractalNum = 3;
+			System.out.println("Switching to Koch Snowflake Fractal");
+		}
+		
 		if(play) {
 			System.out.println("Frame Number: " + frameNumber);
 		}
@@ -820,6 +847,7 @@ public final class RunFractal {
         clSetKernelArg1i(clKernel, 7, maxrayiterations);
         clSetKernelArg1i(clKernel, 8, maxDEiterations);
         clSetKernelArg1i(clKernel, 10, antialias);
+	clSetKernelArg1i(clKernel, 11, fractalNum % numOfFractals);
         if (!is64bit || !isDoubleFPAvailable(deviceCaps)) {
             clSetKernelArg1f(clKernel, 3, (float)camera.getLocation().getX());
             clSetKernelArg1f(clKernel, 4, (float)camera.getLocation().getY());
