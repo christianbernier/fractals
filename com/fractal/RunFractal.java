@@ -213,8 +213,18 @@ public final class RunFractal {
 
             return getPlatformInfoStringUTF8(p1, CL_PLATFORM_VENDOR).compareTo(getPlatformInfoStringUTF8(p2, CL_PLATFORM_VENDOR));
         });
+        
+        if(platforms.size() > 1) {
+        	System.out.println("Multiple supported gpu platforms found: ");
+        	for(int i = 0; i < platforms.size(); i++) {
+        		System.out.println(i+": "+getPlatformInfoStringUTF8(platforms.get(i), CL_PLATFORM_VENDOR));
+        	}
+        	System.out.println("Selecting platform 1");
+        	platform     = platforms.get(1);
+        } else {
+        	platform     = platforms.get(0);
+        }
 
-        platform     = platforms.get(0);
         platformCaps = CL.createPlatformCapabilities(platform);
 
         String platformID;

@@ -19,7 +19,7 @@
 	#define _3 3.0
 	#define _6 6.0
 	#define fov 1.0471975512 //PI/3
-	#define collidethresh 0.0001
+	#define collidethresh 0.000001
 	#define maxraylength 5
 	#define PI 3.14159
 #else
