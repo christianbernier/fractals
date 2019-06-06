@@ -1,6 +1,15 @@
 # fractals
 A project for AP CS, where we render 3D fractals using distance estimators and ray marching.
 
+## Fractals Implemented
+#### We currently have 4 fractals implemented into the program.
+| Number (key) | Fractal        |
+|--------------|----------------|
+| 1            | Mandelbulb     |
+| 2            | Mandelbox      |
+| 3            | Menger Sponge  |
+| 4            | Koch Snowflake |
+
 ## Keyboard Inputs
 #### List of all keyboard functions in the Fracal program
 | Key             | Function                         |
@@ -35,7 +44,7 @@ A project for AP CS, where we render 3D fractals using distance estimators and r
 | 1               | Display Mandelbulb Fractal       |
 | 2               | Display Mandelbox Fractal        |
 | 3               | Display Menger Sponge Fractal    |
-| 4               | Display Koch Snoflake Fractal    |
+| 4               | Display Koch Snowflake Fractal   |
 
 ## Week 1 Update (4/11)
 <ul>
@@ -108,6 +117,8 @@ A project for AP CS, where we render 3D fractals using distance estimators and r
 ## Week 8 Update (5/31)
 <ul>
   <li>Added arbitrarily high resolution image export</li>
+  <li>Added fractal hotkeys to quickly change between fractals</li>
+  <li>Added support for multiple GPU systems</li>
 </ul>
 
 
