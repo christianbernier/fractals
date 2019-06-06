@@ -31,6 +31,11 @@ A project for AP CS, where we render 3D fractals using distance estimators and r
 | Click on Window | Recapture Mouse                  |
 | C               | Print Camera Location to Console |
 | . (period)      | Toggle Double Precision          |
+|                 |                                  |
+| 1               | Display Mandelbulb Fractal       |
+| 2               | Display Mandelbox Fractal        |
+| 3               | Display Menger Sponge Fractal    |
+| 4               | Display Koch Snoflake Fractal    |
 
 ## Week 1 Update (4/11)
 <ul>
