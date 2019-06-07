@@ -13,13 +13,14 @@
     #define _255 255.0
 	#define _0 0.0
 	#define _0p5 0.5
+	#define _0p25 0.25
 	#define _1 1.0
 	#define _1p5 1.5
 	#define _2 2.0
 	#define _3 3.0
 	#define _6 6.0
 	#define fov 1.0471975512 //PI/3
-	#define collidethresh 0.0001
+	#define collidethresh 0.000001
 	#define PI 3.14159
 #else
     #define varfloat float
@@ -29,13 +30,14 @@
     #define _255 255.0f
 	#define _0 0.0f
 	#define _0p5 0.5f
+	#define _0p25 0.25f
 	#define _1 1.0f
 	#define _1p5 1.5f
 	#define _2 2.0f
 	#define _3 3.0f
 	#define _6 6.0f
 	#define fov 1.0471975512f //PI/3 
-	#define collidethresh 0.0001f
+	#define collidethresh 0.000001f
 	#define PI 3.14159f
 #endif
 
@@ -256,8 +258,8 @@ varfloat DE(varfloat3 position, int DE_Iters, varfloat t, int fractalNum) {
 			return DE_Sponge(position, DE_Iters);
 		case 3:
 			return smoothMin(
-						smoothMin(DE_Torus(position, (varfloat3)(0, t, 1), (varfloat2)(0.25, 0.5)), DE_Sphere(position, (varfloat3)(1, 0, 0), _0p5), _2),
-						DE_Box(position, (varfloat3)(0, 0, 0), (varfloat3)(_1, _1, _0p5)), _2);
+						smoothMin(DE_Torus(position, (varfloat3)(0, 3*t-1, 1), (varfloat2)(0.5, 0.25)), DE_Sphere(position, (varfloat3)(-1+3*t, -1+3*t, -_1p5+4*t), _0p25), _1),
+						DE_Box(position, (varfloat3)(0, 0, 0), (varfloat3)(_1, _1, _0p5)), _1);
 		
 		default: 
 			return DE_Mandelbox(position, DE_Iters); //default
