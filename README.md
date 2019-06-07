@@ -46,16 +46,17 @@ A project for AP CS, where we render 3D fractals using distance estimators and r
 | 3               | Display Menger Sponge Fractal    |
 | 4               | Display Koch Snowflake Fractal   |
 
-#Instructions for building from source
-Download the lwjgl-release-custom-zip file that corresponds to your os
-Go here: [https://www.lwjgl.org/customize](https://www.lwjgl.org/customize) and click load config
-Upload the lwjgl-release-custom-zip file
-Download the zip
-Create a new project
-Follow these instructions for installing the library into the project: [https://github.com/LWJGL/lwjgl3-wiki/wiki/1.2.-Install](https://github.com/LWJGL/lwjgl3-wiki/wiki/1.2.-Install)
-In the src folder, clone this repo.
-
-#Project Log
+# Instructions for building from source
+<ul>
+  <li>Download the lwjgl-release-custom-zip file that corresponds to your os</li>
+  <li>Go here: [https://www.lwjgl.org/customize](https://www.lwjgl.org/customize) and click load config</li>
+  <li>Upload the lwjgl-release-custom-zip file</li>
+  <li>Download the zip</li>
+  <li>Create a new project</li>
+  <li>Follow these instructions for installing the library into the project: [https://github.com/LWJGL/lwjgl3-wiki/wiki/1.2.-Install](https://github.com/LWJGL/lwjgl3-wiki/wiki/1.2.-Install)</li>
+  <li>In the src folder, clone this repo.</li>
+</ul>
+# Project Log
 
 ## Week 1 Update (4/11)
 <ul>
