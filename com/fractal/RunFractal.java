@@ -100,9 +100,9 @@ public final class RunFractal {
      * 0 - Mandelbulb
      * 1 - Mandelbox
      * 2 - Menger Sponge
-     * 3 - Koch Snowflake
+     * 3 - Test Spheres
      * */
-    private static int fractalNum = 5;
+    private static int fractalNum = 3;
 	
     private static final PointerBuffer kernel2DGlobalWorkSize = BufferUtils.createPointerBuffer(2);
 
@@ -584,20 +584,17 @@ public final class RunFractal {
 			if(KeyboardInput.isKeyDown(GLFW_KEY_0+i)) {
 				fractalNum = i;
 				switch(i) {
-					case 1:
+					case 0:
 						System.out.println("Switching to Mandelbulb Fractal");
 						break;
-					case 2:
+					case 1:
 						System.out.println("Switching to Mandelbox Fractal");
 						break;
-					case 3:
+					case 2:
 						System.out.println("Switching to Menger Sponge Fractal");
 						break;
-					case 4:
-						System.out.println("Switching to Koch Snowflake Fractal");
-						break;
-					case 5:
-						System.out.println("Switching to test spheres");
+					case 3:
+						System.out.println("Switching to Test Spheres");
 						break;
 				}
 				break;
