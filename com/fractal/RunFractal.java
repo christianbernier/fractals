@@ -102,7 +102,7 @@ public final class RunFractal {
      * 2 - Menger Sponge
      * 3 - Koch Snowflake
      * */
-    private static int fractalNum = 0;
+    private static int fractalNum = 5;
 	
     private static final PointerBuffer kernel2DGlobalWorkSize = BufferUtils.createPointerBuffer(2);
 
@@ -578,22 +578,30 @@ public final class RunFractal {
 			GIFName = "";
 		}
 		
-		//fractal switching
-		if(KeyboardInput.isKeyDown(GLFW_KEY_1)) {
-			fractalNum = 0;
-			System.out.println("Switching to Mandelbulb Fractal");
-		}
-		if(KeyboardInput.isKeyDown(GLFW_KEY_2)) {
-			fractalNum = 1;
-			System.out.println("Switching to Mandelbox Fractal");
-		}
-		if(KeyboardInput.isKeyDown(GLFW_KEY_3)) {
-			fractalNum = 2;
-			System.out.println("Switching to Menger Sponge Fractal");
-		}
-		if(KeyboardInput.isKeyDown(GLFW_KEY_4)) {
-			fractalNum = 3;
-			System.out.println("Switching to Koch Snowflake Fractal");
+		
+		//Fractal switching
+		for(int i = 0; i < 10; i++) {
+			if(KeyboardInput.isKeyDown(GLFW_KEY_0+i)) {
+				fractalNum = i;
+				switch(i) {
+					case 1:
+						System.out.println("Switching to Mandelbulb Fractal");
+						break;
+					case 2:
+						System.out.println("Switching to Mandelbox Fractal");
+						break;
+					case 3:
+						System.out.println("Switching to Menger Sponge Fractal");
+						break;
+					case 4:
+						System.out.println("Switching to Koch Snowflake Fractal");
+						break;
+					case 5:
+						System.out.println("Switching to test spheres");
+						break;
+				}
+				break;
+			}
 		}
 		
 		if(play) {

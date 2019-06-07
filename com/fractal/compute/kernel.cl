@@ -19,8 +19,7 @@
 	#define _3 3.0
 	#define _6 6.0
 	#define fov 1.0471975512 //PI/3
-	#define collidethresh 0.000001
-	#define maxraylength 5
+	#define collidethresh 0.0001
 	#define PI 3.14159
 #else
     #define varfloat float
@@ -36,12 +35,12 @@
 	#define _3 3.0f
 	#define _6 6.0f
 	#define fov 1.0471975512f //PI/3 
-	#define collidethresh 0.000001f
-	#define maxraylength 5
+	#define collidethresh 0.0001f
 	#define PI 3.14159f
 #endif
 
-#define DEFUNCTION DE_Mandelbox_c(position, DE_Iters, &c)
+#define maxraylength 5
+#define maxcollisions 4
 
 //DISTANCE ESTIMATORS https://iquilezles.org/www/articles/distfunctions/distfunctions.htm
 //OPENCL SPECIFICATION https://www.khronos.org/registry/OpenCL/specs/opencl-2.1.pdf
@@ -242,9 +241,23 @@ varfloat DE_Koch_t(varfloat3 vec, varfloat t){
     return length( vec*0.004f ) - 0.01f;
 }*/
 
-/*varfloat DE(varfloat3 vec) {
-	
-}*/
+varfloat DE(varfloat3 position, int DE_Iters, varfloat t, int fractalNum) {
+	/*switch(fractalNum){
+		case 1: 
+			return DE_Mandelbulb(position, DE_Iters);
+		case 2: 
+			return DE_Mandelbox(position, DE_Iters); 
+		case 3: 
+			return DE_Sponge(position, DE_Iters);
+		case 4: 
+			//return DE_Koch_t(position, t);
+		case 5:*/
+			return fmin(DE_Sphere(position, (varfloat3)(0, -1, 0), _0p5), DE_Sphere(position, (varfloat3)(0, 1, 0), _0p5));
+		
+		//default: 
+			//return DE_Mandelbox(position, DE_Iters); //default
+	//}
+}
 
 varfloat3 Hue(varfloat hue) { //Hue is from 0 to 1
 	hue *= _6;
@@ -269,8 +282,17 @@ varfloat3 Hue(varfloat hue) { //Hue is from 0 to 1
 	return (varfloat3)(_1, _0, x);
 }
 
-varfloat3 reflect(varfloat3 incident, varfloat3 point) {
-	return incident;
+#define xDir (varfloat3)(0.001, 0, 0)
+#define yDir (varfloat3)(0, 0.001, 0)
+#define zDir (varfloat3)(0, 0, 0.001)
+
+varfloat3 reflect(varfloat3 incident, varfloat3 pos, int DE_Iters, varfloat t, int fractalNum) {
+	varfloat3 normal = normalize((varfloat3)(DE(pos+xDir, DE_Iters, t, fractalNum)-DE(pos-xDir, DE_Iters, t, fractalNum), 
+											 DE(pos+yDir, DE_Iters, t, fractalNum)-DE(pos-yDir, DE_Iters, t, fractalNum),
+											 DE(pos+zDir, DE_Iters, t, fractalNum)-DE(pos-zDir, DE_Iters, t, fractalNum)));
+	
+	
+	return incident - _2 * dot(incident, normal) * normal;
 }
 
 kernel void raymarch(const int width, 				//0
@@ -297,17 +319,17 @@ kernel void raymarch(const int width, 				//0
 	
 	varfloat3 colorvec = {0, 0, 0};
 	
+	varfloat3 tempcolor;
+	
 	varfloat2 p;
 	varfloat3 temp;
 	varfloat3 direction;
 	int rayiterations;
 	varfloat currentDist;
 	varfloat raylength;
-	bool collided;
+	int collisions;
 	
-	varfloat z = 0;
-	
-	varfloat c;
+	varfloat divisor;
 	
 	for(int m = 0; m < AA; m++) {
 		p.x = (-width+_2*(pixelcoords.x + (varfloat)m/(varfloat)AA - _0p5))/(varfloat)height;
@@ -317,6 +339,8 @@ kernel void raymarch(const int width, 				//0
 			temp = normalize((varfloat3)(p.x, p.y, _2));
 			
 			position = (varfloat3)(px, py, pz);
+			
+			tempcolor = (varfloat3)(0, 0, 0);
 			
 			//012345678
 			//ABCDEFGHI
@@ -333,30 +357,25 @@ kernel void raymarch(const int width, 				//0
 			rayiterations = 0;
 			currentDist = 1;
 			raylength = 0;
-			collided = true;
-			//c = 10.0f;
+			collisions = 0;
+			divisor = 0;
 			
-			while(currentDist > collidethresh) {
-				//currentDist = DEFUNCTION;
-				switch(fractalNum){
-					case 0: currentDist = DE_Mandelbulb(position, DE_Iters); break;
-					case 1: currentDist = DE_Mandelbox_c(position, DE_Iters, &c); break;
-					case 2: currentDist = DE_Sponge(position, DE_Iters); break;
-					case 3: currentDist = DE_Koch_t(position, t); break;
-					
-					default: currentDist = DE_Mandelbox_c(position, DE_Iters, &c); //default
-				}
+			while(raylength <= maxraylength && rayiterations < maxrayiterations && collisions < maxcollisions) {
+				currentDist = DE(position, DE_Iters, t, fractalNum);
 				position += direction * currentDist;
 				raylength += currentDist;
 				rayiterations++;
-				if(raylength >= maxraylength || rayiterations >= maxrayiterations) {
-					collided = false;
-					break;
+				if(currentDist <= collidethresh) {
+					direction = reflect(direction, position, DE_Iters, t, fractalNum);
+					//divisor += pow(_0p5, collisions);
+					tempcolor += (varfloat3)(10, 10, 10);///*pow(_0p5, collisions)* */Hue(fmod(length(position), _1))*(maxrayiterations-rayiterations)/maxrayiterations;
+					collisions++;
 				}
 			}
 			
-			if(collided) {
-				colorvec += Hue(fmod(length(position), _1))*(maxrayiterations-rayiterations)/maxrayiterations; //
+			
+			if(collisions > 0) {
+				colorvec += tempcolor / collisions;//divisor;
 			} else {
 				colorvec += (varfloat3)(0, 0, 0);
 			}
