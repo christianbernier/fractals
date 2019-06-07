@@ -40,7 +40,7 @@
 #endif
 
 #define maxraylength 5
-#define maxcollisions 4
+#define maxcollisions 1
 
 //DISTANCE ESTIMATORS https://iquilezles.org/www/articles/distfunctions/distfunctions.htm
 //OPENCL SPECIFICATION https://www.khronos.org/registry/OpenCL/specs/opencl-2.1.pdf
@@ -241,23 +241,30 @@ varfloat DE_Koch_t(varfloat3 vec, varfloat t){
     return length( vec*0.004f ) - 0.01f;
 }*/
 
-varfloat DE(varfloat3 position, int DE_Iters, varfloat t, int fractalNum) {
-	/*switch(fractalNum){
-		case 1: 
-			return DE_Mandelbulb(position, DE_Iters);
-		case 2: 
-			return DE_Mandelbox(position, DE_Iters); 
-		case 3: 
-			return DE_Sponge(position, DE_Iters);
-		case 4: 
-			//return DE_Koch_t(position, t);
-		case 5:*/
-			return fmin(DE_Sphere(position, (varfloat3)(0, -1, 0), _0p5), DE_Sphere(position, (varfloat3)(0, 1, 0), _0p5));
-		
-		//default: 
-			//return DE_Mandelbox(position, DE_Iters); //default
-	//}
+varfloat smoothMin(varfloat dstA, varfloat dstB, varfloat k){
+	varfloat h = fmax(k - fabs(dstA - dstB), _0) / k;
+	return fmin(dstA, dstB) - h*h*h*k/_6;
 }
+
+varfloat DE(varfloat3 position, int DE_Iters, varfloat t, int fractalNum) {
+	switch(fractalNum){
+		case 0: 
+			return DE_Mandelbulb(position, DE_Iters);
+		case 1: 
+			return DE_Mandelbox(position, DE_Iters); 
+		case 2: 
+			return DE_Sponge(position, DE_Iters);
+		case 3:
+			return smoothMin(DE_Torus(position, (varfloat3)(0, -1, 0), _0p5), DE_Sphere(position, (varfloat3)(0, t, 0), _0p5), _2);
+		
+		default: 
+			return DE_Mandelbox(position, DE_Iters); //default
+	}
+}
+
+
+
+
 
 varfloat3 Hue(varfloat hue) { //Hue is from 0 to 1
 	hue *= _6;
@@ -368,7 +375,7 @@ kernel void raymarch(const int width, 				//0
 				if(currentDist <= collidethresh) {
 					direction = reflect(direction, position, DE_Iters, t, fractalNum);
 					//divisor += pow(_0p5, collisions);
-					tempcolor += (varfloat3)(10, 10, 10);///*pow(_0p5, collisions)* */Hue(fmod(length(position), _1))*(maxrayiterations-rayiterations)/maxrayiterations;
+					tempcolor += Hue(fmod(length(position), _1))*(maxrayiterations-rayiterations)/maxrayiterations;
 					collisions++;
 				}
 			}
