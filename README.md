@@ -1,4 +1,4 @@
-# fractals
+# Fractals
 A project for AP CS, where we render 3D fractals using distance estimators and ray marching.
 
 ## Fractals Implemented
@@ -45,6 +45,11 @@ A project for AP CS, where we render 3D fractals using distance estimators and r
 | 2               | Display Mandelbox Fractal        |
 | 3               | Display Menger Sponge Fractal    |
 | 4               | Display Koch Snowflake Fractal   |
+
+#Instructions for building from source
+
+
+#Project Log
 
 ## Week 1 Update (4/11)
 <ul>
