@@ -255,7 +255,9 @@ varfloat DE(varfloat3 position, int DE_Iters, varfloat t, int fractalNum) {
 		case 2: 
 			return DE_Sponge(position, DE_Iters);
 		case 3:
-			return smoothMin(DE_Torus(position, (varfloat3)(0, -1, 0), _0p5), DE_Sphere(position, (varfloat3)(0, t, 0), _0p5), _2);
+			return smoothMin(
+						smoothMin(DE_Torus(position, (varfloat3)(0, t, 1), (varfloat2)(0.25, 0.5)), DE_Sphere(position, (varfloat3)(1, 0, 0), _0p5), _2),
+						DE_Box(position, (varfloat3)(0, 0, 0), (varfloat3)(_1, _1, _0p5)), _2);
 		
 		default: 
 			return DE_Mandelbox(position, DE_Iters); //default

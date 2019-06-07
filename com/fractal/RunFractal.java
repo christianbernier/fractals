@@ -95,7 +95,6 @@ public final class RunFractal {
     
     private static double frameNumber = 1;
     private static final double frameLimit = 200;
-    private static int numOfFractals = 4;
     /*
      * 0 - Mandelbulb
      * 1 - Mandelbox
@@ -852,7 +851,7 @@ public final class RunFractal {
         clSetKernelArg1i(clKernel, 7, maxrayiterations);
         clSetKernelArg1i(clKernel, 8, maxDEiterations);
         clSetKernelArg1i(clKernel, 10, antialias);
-	clSetKernelArg1i(clKernel, 11, fractalNum % numOfFractals);
+	clSetKernelArg1i(clKernel, 11, fractalNum);
         if (!is64bit || !isDoubleFPAvailable(deviceCaps)) {
             clSetKernelArg1f(clKernel, 3, (float)camera.getLocation().getX());
             clSetKernelArg1f(clKernel, 4, (float)camera.getLocation().getY());
