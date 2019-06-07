@@ -1,0 +1,28 @@
+{
+  "build": "release",
+  "mode": "zip",
+  "selectedAddons": [],
+  "platform": [
+    "macos"
+  ],
+  "descriptions": false,
+  "compact": false,
+  "hardcoded": false,
+  "javadoc": false,
+  "includeJSON": false,
+  "source": false,
+  "osgi": false,
+  "language": "groovy",
+  "contents": [
+    "lwjgl",
+    "lwjgl-assimp",
+    "lwjgl-egl",
+    "lwjgl-glfw",
+    "lwjgl-opencl",
+    "lwjgl-opengl",
+    "lwjgl-opengles",
+    "lwjgl-stb"
+  ],
+  "version": "3.2.2",
+  "versionLatest": "3.2.2"
+}
