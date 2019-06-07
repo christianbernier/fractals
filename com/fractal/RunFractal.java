@@ -141,8 +141,8 @@ public final class RunFractal {
 	public static GLFWWindow window;
 	public static final int initWidth = 640;
 	public static final int initHeight = 480;
-	public static final int hiresWidth = 7680;
-	public static final int hiresHeight = 4320;
+	public static final int hiresWidth = 3840;		//4K = 3840 × 2160
+	public static final int hiresHeight = 2160;
 	public static int width = initWidth;
 	public static int height = initHeight;
 	private static int maxrayiterations = 100;
@@ -1079,15 +1079,15 @@ public final class RunFractal {
     	Date today = new Date();
     	SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
     	String filename = "exports/" + sdf.format(today) + ".bmp";
-    	if(Platform.get() == Platform.WINDOWS) {
+//    	if(Platform.get() == Platform.WINDOWS) {
         	ByteBuffer buffer = BufferUtils.createByteBuffer(width * height * bpp);
         	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA_INTEGER, GL_UNSIGNED_BYTE, buffer);
     		STBImageWrite.stbi_write_bmp(filename, width, height, bpp, buffer);
-    	} else {
-    		ByteBuffer buffer = BufferUtils.createByteBuffer(4 * width * height * bpp);
-    		glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA_INTEGER, GL_UNSIGNED_BYTE, buffer);
-    		STBImageWrite.stbi_write_bmp(filename, width * 2, height * 2, bpp, buffer);
-    	}
+//    	} else {
+//    		ByteBuffer buffer = BufferUtils.createByteBuffer(4 * width * height * bpp);
+//    		glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA_INTEGER, GL_UNSIGNED_BYTE, buffer);
+//    		STBImageWrite.stbi_write_bmp(filename, width * 2, height * 2, bpp, buffer);
+//    	}
     	System.out.println("Screenshot saved as " + filename);
     }
 	
