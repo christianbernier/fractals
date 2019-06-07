@@ -583,17 +583,17 @@ public final class RunFractal {
 			if(KeyboardInput.isKeyDown(GLFW_KEY_0+i)) {
 				fractalNum = i;
 				switch(i) {
-					case 0:
+					case 1:
 						System.out.println("Switching to Mandelbulb Fractal");
 						break;
-					case 1:
+					case 2:
 						System.out.println("Switching to Mandelbox Fractal");
 						break;
-					case 2:
+					case 3:
 						System.out.println("Switching to Menger Sponge Fractal");
 						break;
-					case 3:
-						System.out.println("Switching to Test Spheres");
+					case 4:
+						System.out.println("Switching to Smooth Min");
 						break;
 				}
 				break;

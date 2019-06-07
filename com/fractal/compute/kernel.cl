@@ -250,13 +250,13 @@ varfloat smoothMin(varfloat dstA, varfloat dstB, varfloat k){
 
 varfloat DE(varfloat3 position, int DE_Iters, varfloat t, int fractalNum) {
 	switch(fractalNum){
-		case 0: 
-			return DE_Mandelbulb(position, DE_Iters);
 		case 1: 
-			return DE_Mandelbox(position, DE_Iters); 
+			return DE_Mandelbulb(position, DE_Iters);
 		case 2: 
+			return DE_Mandelbox(position, DE_Iters); 
+		case 3: 
 			return DE_Sponge(position, DE_Iters);
-		case 3:
+		case 4:
 			return smoothMin(
 						smoothMin(DE_Torus(position, (varfloat3)(0, 3*t-1, 1), (varfloat2)(0.5, 0.25)), DE_Sphere(position, (varfloat3)(-1+3*t, -1+3*t, -_1p5+4*t), _0p25), _1),
 						DE_Box(position, (varfloat3)(0, 0, 0), (varfloat3)(_1, _1, _0p5)), _1);
